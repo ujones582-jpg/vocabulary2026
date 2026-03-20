@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Send, BookmarkPlus, ArrowRight, Loader2 } from "lucide-react";
+import { ArrowLeft, Send, BookmarkPlus, ArrowRight, Loader2, LogOut as LeaveIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import type { WordBank, ErrorEntry } from "@/lib/vocabulary";
-import { getRandomWord, getRoleForBank, getRandomScene } from "@/lib/vocabulary";
+import { useAuth } from "@/hooks/useAuth";
+import type { WordBank } from "@/lib/vocabulary";
+import { getRandomWord, getRoleForBank, getRandomScene, getScoreCategories } from "@/lib/vocabulary";
 import { useToast } from "@/hooks/use-toast";
 
 interface Message {
@@ -18,6 +19,7 @@ export default function ConversationPractice() {
   const bank = (searchParams.get("bank") || "academic") as WordBank;
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const roleInfo = getRoleForBank(bank);
   const [currentWord, setCurrentWord] = useState(() => getRandomWord(bank));
@@ -26,47 +28,30 @@ export default function ConversationPractice() {
   const [showActions, setShowActions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [roundCount, setRoundCount] = useState(1);
+  const [showScoring, setShowScoring] = useState(false);
+  const [scores, setScores] = useState<Record<string, number> | null>(null);
+  const [scoringLoading, setScoringLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Generate initial scene via AI
   const generateScene = useCallback(async (word: typeof currentWord) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("vocab-chat", {
-        body: {
-          type: "generate_scene",
-          bank,
-          role: roleInfo.label,
-          word,
-        },
+        body: { type: "generate_scene", bank, role: roleInfo.label, word },
       });
-
       if (error) throw error;
-
-      const scene = data?.scene || getRandomScene(roleInfo.role);
-      setMessages([{
-        id: Date.now().toString(),
-        role: "ai",
-        content: scene,
-      }]);
-    } catch (e) {
-      console.error("Scene generation failed:", e);
-      // Fallback to local scene
-      setMessages([{
-        id: Date.now().toString(),
-        role: "ai",
-        content: getRandomScene(roleInfo.role),
-      }]);
+      setMessages([{ id: Date.now().toString(), role: "ai", content: data?.scene || getRandomScene(roleInfo.role) }]);
+    } catch {
+      setMessages([{ id: Date.now().toString(), role: "ai", content: getRandomScene(roleInfo.role) }]);
     } finally {
       setIsLoading(false);
     }
   }, [bank, roleInfo]);
 
-  // Generate first scene on mount
   useEffect(() => {
     generateScene(currentWord);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -74,48 +59,24 @@ export default function ConversationPractice() {
 
   const handleSubmit = useCallback(async () => {
     if (!input.trim() || isLoading) return;
-
     const userText = input.trim();
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      role: "user",
-      content: userText,
-    };
-    setMessages(prev => [...prev, userMsg]);
+    setMessages(prev => [...prev, { id: Date.now().toString(), role: "user", content: userText }]);
     setInput("");
     setIsLoading(true);
 
     try {
       const aiScene = messages.find(m => m.role === "ai")?.content || "";
       const { data, error } = await supabase.functions.invoke("vocab-chat", {
-        body: {
-          type: "evaluate",
-          bank,
-          role: roleInfo.label,
-          word: currentWord,
-          userInput: userText,
-          conversationHistory: aiScene,
-        },
+        body: { type: "evaluate", bank, role: roleInfo.label, word: currentWord, userInput: userText, conversationHistory: aiScene },
       });
-
       if (error) throw error;
-
-      const feedbackMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "feedback",
-        content: data?.feedback || "Unable to evaluate. Try again.",
-        feedbackType: data?.correct ? "correct" : "incorrect",
-      };
-
-      setMessages(prev => [...prev, feedbackMsg]);
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(), role: "feedback",
+        content: data?.feedback || "Unable to evaluate.", feedbackType: data?.correct ? "correct" : "incorrect",
+      }]);
       setShowActions(true);
     } catch (e: any) {
-      console.error("Evaluation failed:", e);
-      toast({
-        variant: "destructive",
-        title: "AI Error",
-        description: e?.message || "Failed to get feedback. Please try again.",
-      });
+      toast({ variant: "destructive", title: "AI Error", description: e?.message || "Failed to get feedback." });
     } finally {
       setIsLoading(false);
     }
@@ -129,34 +90,122 @@ export default function ConversationPractice() {
     await generateScene(newWord);
   }, [bank, currentWord.word, generateScene]);
 
-  const handleSaveError = useCallback(() => {
+  const handleSaveError = useCallback(async () => {
     const lastUser = [...messages].reverse().find(m => m.role === "user");
     const lastFeedback = [...messages].reverse().find(m => m.role === "feedback");
-    if (!lastUser || !lastFeedback) return;
+    if (!lastUser || !lastFeedback || !user) return;
 
-    const entry: ErrorEntry = {
-      id: Date.now().toString(),
+    const { error } = await supabase.from("user_errors").insert({
+      user_id: user.id,
       word: currentWord.word,
-      userSentence: lastUser.content,
+      bank,
+      user_sentence: lastUser.content,
       correction: lastFeedback.content,
-      timestamp: Date.now(),
-    };
+    });
 
-    const existing = JSON.parse(localStorage.getItem("vocab-errors") || "[]");
-    localStorage.setItem("vocab-errors", JSON.stringify([entry, ...existing]));
-
-    toast({ title: "Saved!", description: `"${currentWord.word}" added to your error bank.` });
+    if (error) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to save." });
+    } else {
+      toast({ title: "Saved!", description: `"${currentWord.word}" added to your error bank.` });
+    }
     handleNextRound();
-  }, [messages, currentWord, handleNextRound, toast]);
+  }, [messages, currentWord, bank, user, handleNextRound, toast]);
+
+  const handleLeaveAndScore = useCallback(async () => {
+    if (roundCount < 2) {
+      navigate(`/learn?bank=${bank}`);
+      return;
+    }
+    setScoringLoading(true);
+    setShowScoring(true);
+
+    try {
+      const categories = getScoreCategories(bank);
+      const conversationLog = messages.map(m => `[${m.role}]: ${m.content}`).join("\n");
+
+      const { data, error } = await supabase.functions.invoke("vocab-chat", {
+        body: {
+          type: "score_conversation",
+          bank,
+          role: roleInfo.label,
+          categories: categories.map(c => c.key),
+          conversationLog,
+          roundCount,
+        },
+      });
+
+      if (error) throw error;
+      setScores(data?.scores || null);
+
+      if (user && data?.scores) {
+        await supabase.from("conversation_scores").insert({
+          user_id: user.id,
+          bank,
+          scores: data.scores,
+          rounds_completed: roundCount,
+        });
+      }
+    } catch {
+      setScores(null);
+    } finally {
+      setScoringLoading(false);
+    }
+  }, [roundCount, bank, messages, roleInfo, user, navigate]);
+
+  const categories = getScoreCategories(bank);
+
+  // Scoring overlay
+  if (showScoring) {
+    return (
+      <div className="min-h-screen flex flex-col max-w-md mx-auto items-center justify-center px-6 py-8">
+        {scoringLoading ? (
+          <div className="flex flex-col items-center gap-4 opacity-0 animate-fade-up">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">AI is scoring your conversation…</p>
+          </div>
+        ) : (
+          <div className="w-full opacity-0 animate-fade-up">
+            <h2 className="text-xl font-bold text-foreground text-center mb-2">Conversation Score</h2>
+            <p className="text-sm text-muted-foreground text-center mb-6">{roundCount} rounds completed</p>
+
+            <div className="space-y-4 mb-8">
+              {categories.map((cat, i) => {
+                const score = scores?.[cat.key] ?? 0;
+                return (
+                  <div key={cat.key} className="opacity-0 animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
+                    <div className="flex justify-between items-baseline mb-1.5">
+                      <p className="text-sm font-semibold text-foreground">{cat.label}</p>
+                      <span className="text-sm font-bold text-primary">{score}/10</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">{cat.description}</p>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary rounded-full transition-all duration-700"
+                        style={{ width: `${score * 10}%`, transitionDelay: `${200 + i * 100}ms` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => navigate(`/learn?bank=${bank}`)}
+              className="w-full py-3.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold transition-all active:scale-[0.97]"
+            >
+              Continue Learning
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md px-4 py-3 flex items-center gap-3 border-b border-border">
-        <button
-          onClick={() => navigate("/")}
-          className="p-1.5 rounded-md hover:bg-muted transition-colors active:scale-95"
-        >
+        <button onClick={() => navigate(`/learn?bank=${bank}`)} className="p-1.5 rounded-md hover:bg-muted transition-colors active:scale-95">
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
         <div className="flex-1 min-w-0">
@@ -164,10 +213,11 @@ export default function ConversationPractice() {
           <p className="text-xs text-muted-foreground">Round {roundCount}</p>
         </div>
         <button
-          onClick={() => navigate("/errors")}
-          className="text-xs font-medium text-primary px-3 py-1.5 rounded-md bg-accent transition-colors active:scale-95"
+          onClick={handleLeaveAndScore}
+          className="text-xs font-medium text-primary px-3 py-1.5 rounded-md bg-accent transition-colors active:scale-95 flex items-center gap-1"
         >
-          Error Bank
+          <LeaveIcon className="w-3 h-3" />
+          Leave & Score
         </button>
       </div>
 
@@ -184,14 +234,7 @@ export default function ConversationPractice() {
       {/* Chat area */}
       <div className="flex-1 px-4 py-4 space-y-3 overflow-y-auto">
         {messages.map((msg, i) => (
-          <div
-            key={msg.id}
-            className={`
-              opacity-0
-              ${msg.role === "user" ? "animate-slide-in-right" : "animate-slide-in-left"}
-            `}
-            style={{ animationDelay: `${i * 60}ms` }}
-          >
+          <div key={msg.id} className={`opacity-0 ${msg.role === "user" ? "animate-slide-in-right" : "animate-slide-in-left"}`} style={{ animationDelay: `${i * 60}ms` }}>
             {msg.role === "ai" && (
               <div className="max-w-[85%]">
                 <p className="text-xs font-medium text-muted-foreground mb-1">{roleInfo.label}</p>
@@ -200,7 +243,6 @@ export default function ConversationPractice() {
                 </div>
               </div>
             )}
-
             {msg.role === "user" && (
               <div className="flex justify-end">
                 <div className="max-w-[85%] bg-primary rounded-lg rounded-tr-sm p-3.5">
@@ -208,15 +250,8 @@ export default function ConversationPractice() {
                 </div>
               </div>
             )}
-
             {msg.role === "feedback" && (
-              <div className={`
-                max-w-[90%] rounded-lg p-3.5 border
-                ${msg.feedbackType === "correct"
-                  ? "bg-success/10 border-success/20"
-                  : "bg-destructive/10 border-destructive/20"
-                }
-              `}>
+              <div className={`max-w-[90%] rounded-lg p-3.5 border ${msg.feedbackType === "correct" ? "bg-success/10 border-success/20" : "bg-destructive/10 border-destructive/20"}`}>
                 <p className="text-sm leading-relaxed">
                   <span className="mr-1">{msg.feedbackType === "correct" ? "✅" : "❌"}</span>
                   {msg.content}
@@ -226,7 +261,6 @@ export default function ConversationPractice() {
           </div>
         ))}
 
-        {/* Loading indicator */}
         {isLoading && (
           <div className="flex items-center gap-2 text-muted-foreground animate-fade-up">
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -234,36 +268,23 @@ export default function ConversationPractice() {
           </div>
         )}
 
-        {/* Action buttons after feedback */}
         {showActions && (
           <div className="flex gap-2 pt-2 opacity-0 animate-fade-up" style={{ animationDelay: "200ms" }}>
-            <button
-              onClick={handleNextRound}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-all active:scale-[0.97]"
-            >
-              <ArrowRight className="w-4 h-4" />
-              Next Round
+            <button onClick={handleNextRound} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-all active:scale-[0.97]">
+              <ArrowRight className="w-4 h-4" /> Next Round
             </button>
-            <button
-              onClick={handleSaveError}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg bg-card text-foreground text-sm font-medium card-shadow transition-all active:scale-[0.97]"
-            >
-              <BookmarkPlus className="w-4 h-4" />
-              Save to Review
+            <button onClick={handleSaveError} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg bg-card text-foreground text-sm font-medium card-shadow transition-all active:scale-[0.97]">
+              <BookmarkPlus className="w-4 h-4" /> Save Error
             </button>
           </div>
         )}
-
         <div ref={bottomRef} />
       </div>
 
       {/* Input */}
       {!showActions && (
         <div className="sticky bottom-0 bg-background/80 backdrop-blur-md border-t border-border px-4 py-3">
-          <form
-            onSubmit={e => { e.preventDefault(); handleSubmit(); }}
-            className="flex gap-2"
-          >
+          <form onSubmit={e => { e.preventDefault(); handleSubmit(); }} className="flex gap-2">
             <input
               value={input}
               onChange={e => setInput(e.target.value)}
@@ -271,17 +292,7 @@ export default function ConversationPractice() {
               placeholder={`Use "${currentWord.word}" in a sentence…`}
               className="flex-1 bg-card rounded-lg px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground card-shadow outline-none focus:ring-2 focus:ring-ring transition-shadow disabled:opacity-50"
             />
-            <button
-              type="submit"
-              disabled={!input.trim() || isLoading}
-              className={`
-                p-3 rounded-lg transition-all active:scale-95
-                ${input.trim() && !isLoading
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground"
-                }
-              `}
-            >
+            <button type="submit" disabled={!input.trim() || isLoading} className={`p-3 rounded-lg transition-all active:scale-95 ${input.trim() && !isLoading ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
               <Send className="w-4 h-4" />
             </button>
           </form>
