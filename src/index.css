@@ -62,4 +62,16 @@
   .card-shadow-hover {
     box-shadow: 0 4px 20px 0 hsl(220 20% 14% / 0.1), 0 2px 6px 0 hsl(220 20% 14% / 0.06);
   }
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
 }

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { WordBank } from "@/lib/vocabulary";
-import { BookOpen, GraduationCap, Plane, Sprout } from "lucide-react";
+import { BookOpen, GraduationCap, Plane, Sprout, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const banks = [
   {
@@ -15,7 +16,7 @@ const banks = [
     id: "beginner" as WordBank,
     icon: Sprout,
     label: "Beginner EFL",
-    desc: "English as a Foreign Language",
+    desc: "Start from zero — no English needed!",
     emoji: "🌱",
   },
   {
@@ -30,6 +31,7 @@ const banks = [
 export default function WordBankSelection() {
   const [selected, setSelected] = useState<WordBank | null>(null);
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   return (
     <div className="min-h-screen flex flex-col px-5 py-8 max-w-md mx-auto">
@@ -45,7 +47,7 @@ export default function WordBankSelection() {
           word bank
         </h1>
         <p className="text-muted-foreground text-sm mt-2">
-          Practice vocabulary through real conversations, not flashcards.
+          Learn words through flashcards, quizzes, and AI conversations.
         </p>
       </div>
 
@@ -59,12 +61,8 @@ export default function WordBankSelection() {
               onClick={() => setSelected(bank.id)}
               className={`
                 opacity-0 animate-fade-up
-                relative w-full text-left rounded-lg p-5 transition-all duration-200
-                card-shadow
-                ${active
-                  ? "bg-primary ring-2 ring-primary"
-                  : "bg-card hover:card-shadow-hover"
-                }
+                relative w-full text-left rounded-lg p-5 transition-all duration-200 card-shadow
+                ${active ? "bg-primary ring-2 ring-primary" : "bg-card hover:card-shadow-hover"}
                 active:scale-[0.97]
               `}
               style={{ animationDelay: `${100 + i * 80}ms` }}
@@ -79,10 +77,7 @@ export default function WordBankSelection() {
                     {bank.desc}
                   </p>
                 </div>
-                <div className={`
-                  w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors
-                  ${active ? "border-primary-foreground bg-primary-foreground" : "border-muted-foreground/30"}
-                `}>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${active ? "border-primary-foreground bg-primary-foreground" : "border-muted-foreground/30"}`}>
                   {active && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
                 </div>
               </div>
@@ -92,19 +87,20 @@ export default function WordBankSelection() {
       </div>
 
       {/* Start button */}
-      <div className="pt-6 opacity-0 animate-fade-up" style={{ animationDelay: "400ms" }}>
+      <div className="pt-6 space-y-3 opacity-0 animate-fade-up" style={{ animationDelay: "400ms" }}>
         <button
           disabled={!selected}
-          onClick={() => selected && navigate(`/practice?bank=${selected}`)}
-          className={`
-            w-full py-4 rounded-lg font-semibold text-base transition-all duration-200 active:scale-[0.97]
-            ${selected
-              ? "bg-primary text-primary-foreground card-shadow"
-              : "bg-muted text-muted-foreground cursor-not-allowed"
-            }
-          `}
+          onClick={() => selected && navigate(`/learn?bank=${selected}`)}
+          className={`w-full py-4 rounded-lg font-semibold text-base transition-all duration-200 active:scale-[0.97] ${selected ? "bg-primary text-primary-foreground card-shadow" : "bg-muted text-muted-foreground cursor-not-allowed"}`}
         >
-          Start Practice
+          Start Learning
+        </button>
+        <button
+          onClick={async () => { await signOut(); navigate("/auth"); }}
+          className="w-full py-2.5 text-sm text-muted-foreground font-medium flex items-center justify-center gap-1.5 hover:text-foreground transition-colors"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          Sign out
         </button>
       </div>
     </div>
