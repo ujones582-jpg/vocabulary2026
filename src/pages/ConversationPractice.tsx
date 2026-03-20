@@ -1,8 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Send, BookmarkPlus, ArrowRight } from "lucide-react";
+import { ArrowLeft, Send, BookmarkPlus, ArrowRight, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import type { WordBank, ErrorEntry } from "@/lib/vocabulary";
-import { getRandomWord, getRoleForBank, getRandomScene, getMockFeedback } from "@/lib/vocabulary";
+import { getRandomWord, getRoleForBank, getRandomScene } from "@/lib/vocabulary";
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
@@ -15,19 +17,14 @@ export default function ConversationPractice() {
   const [searchParams] = useSearchParams();
   const bank = (searchParams.get("bank") || "academic") as WordBank;
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const roleInfo = getRoleForBank(bank);
   const [currentWord, setCurrentWord] = useState(() => getRandomWord(bank));
-  const [messages, setMessages] = useState<Message[]>(() => {
-    const scene = getRandomScene(roleInfo.role);
-    return [{
-      id: "1",
-      role: "ai" as const,
-      content: scene,
-    }];
-  });
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [showActions, setShowActions] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [roundCount, setRoundCount] = useState(1);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -35,36 +32,102 @@ export default function ConversationPractice() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSubmit = useCallback(() => {
-    if (!input.trim()) return;
+  // Generate initial scene via AI
+  const generateScene = useCallback(async (word: typeof currentWord) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("vocab-chat", {
+        body: {
+          type: "generate_scene",
+          bank,
+          role: roleInfo.label,
+          word,
+        },
+      });
 
+      if (error) throw error;
+
+      const scene = data?.scene || getRandomScene(roleInfo.role);
+      setMessages([{
+        id: Date.now().toString(),
+        role: "ai",
+        content: scene,
+      }]);
+    } catch (e) {
+      console.error("Scene generation failed:", e);
+      // Fallback to local scene
+      setMessages([{
+        id: Date.now().toString(),
+        role: "ai",
+        content: getRandomScene(roleInfo.role),
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [bank, roleInfo]);
+
+  // Generate first scene on mount
+  useEffect(() => {
+    generateScene(currentWord);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userText = input.trim();
     const userMsg: Message = {
       id: Date.now().toString(),
       role: "user",
-      content: input.trim(),
+      content: userText,
     };
-
-    const feedback = getMockFeedback(currentWord.word, input);
-    const feedbackMsg: Message = {
-      id: (Date.now() + 1).toString(),
-      role: "feedback",
-      content: feedback.feedback,
-      feedbackType: feedback.correct ? "correct" : "incorrect",
-    };
-
-    setMessages(prev => [...prev, userMsg, feedbackMsg]);
+    setMessages(prev => [...prev, userMsg]);
     setInput("");
-    setShowActions(true);
-  }, [input, currentWord]);
+    setIsLoading(true);
 
-  const handleNextRound = useCallback(() => {
+    try {
+      const aiScene = messages.find(m => m.role === "ai")?.content || "";
+      const { data, error } = await supabase.functions.invoke("vocab-chat", {
+        body: {
+          type: "evaluate",
+          bank,
+          role: roleInfo.label,
+          word: currentWord,
+          userInput: userText,
+          conversationHistory: aiScene,
+        },
+      });
+
+      if (error) throw error;
+
+      const feedbackMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "feedback",
+        content: data?.feedback || "Unable to evaluate. Try again.",
+        feedbackType: data?.correct ? "correct" : "incorrect",
+      };
+
+      setMessages(prev => [...prev, feedbackMsg]);
+      setShowActions(true);
+    } catch (e: any) {
+      console.error("Evaluation failed:", e);
+      toast({
+        variant: "destructive",
+        title: "AI Error",
+        description: e?.message || "Failed to get feedback. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [input, isLoading, messages, bank, roleInfo, currentWord, toast]);
+
+  const handleNextRound = useCallback(async () => {
     const newWord = getRandomWord(bank, currentWord.word);
-    const scene = getRandomScene(roleInfo.role);
     setCurrentWord(newWord);
-    setMessages([{ id: Date.now().toString(), role: "ai", content: scene }]);
     setShowActions(false);
     setRoundCount(r => r + 1);
-  }, [bank, currentWord.word, roleInfo.role]);
+    await generateScene(newWord);
+  }, [bank, currentWord.word, generateScene]);
 
   const handleSaveError = useCallback(() => {
     const lastUser = [...messages].reverse().find(m => m.role === "user");
@@ -82,9 +145,9 @@ export default function ConversationPractice() {
     const existing = JSON.parse(localStorage.getItem("vocab-errors") || "[]");
     localStorage.setItem("vocab-errors", JSON.stringify([entry, ...existing]));
 
-    // Visual feedback via toast would be nice but let's keep it simple
+    toast({ title: "Saved!", description: `"${currentWord.word}" added to your error bank.` });
     handleNextRound();
-  }, [messages, currentWord, handleNextRound]);
+  }, [messages, currentWord, handleNextRound, toast]);
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto">
@@ -163,6 +226,14 @@ export default function ConversationPractice() {
           </div>
         ))}
 
+        {/* Loading indicator */}
+        {isLoading && (
+          <div className="flex items-center gap-2 text-muted-foreground animate-fade-up">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm">AI is thinking…</span>
+          </div>
+        )}
+
         {/* Action buttons after feedback */}
         {showActions && (
           <div className="flex gap-2 pt-2 opacity-0 animate-fade-up" style={{ animationDelay: "200ms" }}>
@@ -196,15 +267,16 @@ export default function ConversationPractice() {
             <input
               value={input}
               onChange={e => setInput(e.target.value)}
+              disabled={isLoading}
               placeholder={`Use "${currentWord.word}" in a sentence…`}
-              className="flex-1 bg-card rounded-lg px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground card-shadow outline-none focus:ring-2 focus:ring-ring transition-shadow"
+              className="flex-1 bg-card rounded-lg px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground card-shadow outline-none focus:ring-2 focus:ring-ring transition-shadow disabled:opacity-50"
             />
             <button
               type="submit"
-              disabled={!input.trim()}
+              disabled={!input.trim() || isLoading}
               className={`
                 p-3 rounded-lg transition-all active:scale-95
-                ${input.trim()
+                ${input.trim() && !isLoading
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground"
                 }
