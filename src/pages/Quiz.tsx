@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, XCircle, ArrowRight, RotateCcw, MessageSquare } from "lucide-react";
 import type { WordBank } from "@/lib/vocabulary";
-import { getWordSets, generateQuizOptions, getWordBank } from "@/lib/vocabulary";
+import { getWordSets, getWordBank } from "@/lib/vocabulary";
 
 interface QuizQuestion {
   word: string;
