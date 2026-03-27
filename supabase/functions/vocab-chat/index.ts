@@ -15,58 +15,109 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { type, bank, role, word, userInput, conversationHistory, categories, conversationLog, roundCount } = await req.json();
+    const { type, bank, role, word, userInput, conversationHistory, categories, conversationLog, roundCount, history } = await req.json();
 
     let systemPrompt = "";
-    let userPrompt = "";
+    let messages: { role: string; content: string }[] = [];
 
-    if (type === "generate_scene") {
+    if (type === "chat_start") {
+      // Generate an opening message to start a free-flowing conversation
+      const bankPersona: Record<string, string> = {
+        beginner: `You are a very kind, patient English learning helper talking to an absolute beginner who may know ZERO English words. 
+You are like a kindergarten teacher. Use extremely simple words (1-3 word phrases), lots of emoji 😊, and be super encouraging.
+Start with a very simple greeting and ask a very basic question (like "What is your name?" or "Do you like 🍎?").
+Keep everything at the most basic level possible. Use emoji to help them understand meaning.`,
+
+        everyday: `You are a friendly native English speaker having a casual chat. You're meeting someone new at a coffee shop or social event.
+Be natural, relaxed, and conversational. Talk like a real person — use contractions, casual language, slang if appropriate.
+Start with a natural greeting and a casual question to get the conversation going.
+Don't be overly formal or teacher-like. Just be a friendly person having a real conversation.`,
+
+        academic: `You are an intellectual conversation partner for academic English practice. You might be a fellow student, professor, or conference attendee.
+Use sophisticated but natural language. Discuss interesting topics — current events, science, philosophy, literature, society.
+Start with a thoughtful opening that invites discussion on a substantive topic.
+Be articulate but not pretentious. Engage genuinely with ideas.`,
+      };
+
+      systemPrompt = bankPersona[bank] || bankPersona.academic;
+      messages = [
+        { role: "system", content: systemPrompt + "\n\nGenerate ONLY your opening message. Keep it natural and concise (2-4 sentences max)." },
+        { role: "user", content: "Start the conversation." },
+      ];
+
+    } else if (type === "chat_reply") {
+      // Continue a free-flowing conversation — no word targeting, just natural chat
+      const bankBehavior: Record<string, string> = {
+        beginner: `You are a very kind, patient English learning helper for an absolute beginner who may know very few English words.
+Rules:
+- Use extremely simple English (kindergarten level)
+- Short sentences, 3-6 words max
+- Use emoji liberally to aid understanding 😊🎉👍
+- If they make mistakes, DON'T correct them — just naturally model correct usage in your reply
+- Be super encouraging and warm
+- Ask simple follow-up questions to keep the chat going
+- If they write in another language, gently respond in simple English
+- Never be a teacher — be a friendly helper who makes them feel safe to try`,
+
+        everyday: `You are a native English speaker having a real casual conversation. 
+Rules:
+- Be completely natural — talk like a real human, not a language teacher
+- Use contractions, casual expressions, even slang when natural
+- React genuinely to what they say — laugh, agree, disagree, share your own stories
+- Ask follow-up questions naturally, based on what they said
+- Don't correct their English — just keep the conversation flowing
+- Match their energy — if they're excited, be excited; if they're chill, be chill
+- Stay on topic unless there's a natural reason to shift
+- Keep responses conversational length (2-4 sentences usually)`,
+
+        academic: `You are an intellectual conversation partner for academic discourse.
+Rules:
+- Use sophisticated, varied vocabulary naturally
+- Engage deeply with ideas — add your perspective, challenge their points respectfully
+- Ask thought-provoking follow-up questions
+- Don't correct their English — engage with the IDEAS
+- Use academic register naturally (not forced)
+- Reference relevant concepts, theories, or examples when appropriate
+- Keep responses substantive but not overly long (3-5 sentences usually)`,
+      };
+
+      systemPrompt = bankBehavior[bank] || bankBehavior.academic;
+      
+      // Build messages from conversation history
+      messages = [
+        { role: "system", content: systemPrompt },
+        ...(history || []).map((h: { role: string; content: string }) => ({
+          role: h.role === "assistant" ? "assistant" : "user",
+          content: h.content,
+        })),
+      ];
+
+    } else if (type === "generate_scene") {
+      // Legacy support
       const beginnerNote = bank === "beginner"
-        ? `\nIMPORTANT: The student is an absolute beginner. They may know ZERO English words. Use extremely simple language. Short sentences. 3-5 words max. Use emoji to help understanding. Be patient and encouraging like talking to a kindergartener.`
+        ? `\nIMPORTANT: The student is an absolute beginner. They may know ZERO English words. Use extremely simple language. Short sentences. 3-5 words max. Use emoji to help understanding.`
         : "";
 
-      systemPrompt = `You are a vocabulary practice AI. You play the role of a ${role} helping a student practice English vocabulary.
-Your job is to create a short, natural conversation prompt (2-3 sentences max) that requires the student to use the target word "${word.word}" (${word.partOfSpeech}: ${word.definition}) in their response.
-
+      systemPrompt = `You are a vocabulary practice AI playing the role of a ${role}.
+Create a short, natural conversation prompt (2-3 sentences max) that requires the student to use the target word "${word.word}" (${word.partOfSpeech}: ${word.definition}).
 Rules:
 - Stay in character as a ${role}
-- Make the scenario feel natural and engaging
-- Don't use the target word yourself — let the student use it
-- Keep it brief and conversational
-- Word bank type: ${bank}
-- If bank is "academic", use formal/exam-like scenarios
-- If bank is "beginner", use extremely simple everyday scenarios with very basic English
-- If bank is "everyday", use casual/travel/social scenarios${beginnerNote}
-
-Respond with ONLY the conversation prompt, nothing else.`;
-      userPrompt = `Generate a conversation prompt for the word "${word.word}".`;
+- Don't use the target word yourself
+- Keep it brief${beginnerNote}
+Respond with ONLY the conversation prompt.`;
+      messages = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `Generate a conversation prompt for the word "${word.word}".` },
+      ];
 
     } else if (type === "evaluate") {
-      const beginnerNote = bank === "beginner"
-        ? `\nIMPORTANT: Be very encouraging. The student is an absolute beginner. If they used the word at all, even with grammar mistakes, praise them. Focus on whether they understood the meaning, not grammar perfection. Use simple words in your feedback.`
-        : "";
-
-      systemPrompt = `You are a vocabulary practice AI evaluating a student's use of the word "${word.word}" (${word.partOfSpeech}: ${word.definition}).
-
-Evaluate whether the student used the word correctly in context. Consider:
-1. Is the word used with correct meaning?
-2. Is the grammar correct?
-3. Does it fit naturally in the sentence?
-
-Respond in this exact JSON format:
-{
-  "correct": true/false,
-  "feedback": "Your feedback here"
-}
-
-If correct: praise briefly and explain why the usage works.
-If incorrect: explain the issue and provide a corrected example sentence using the word properly.
-Keep feedback concise (1-2 sentences).${beginnerNote}`;
-      userPrompt = `The conversation context was: "${conversationHistory}"
-
-The student's response: "${userInput}"
-
-Evaluate the usage of "${word.word}".`;
+      // Legacy support
+      systemPrompt = `You are a vocabulary practice AI evaluating usage of "${word.word}" (${word.partOfSpeech}: ${word.definition}).
+Respond in JSON: {"correct": true/false, "feedback": "..."}`;
+      messages = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `Context: "${conversationHistory}"\nStudent: "${userInput}"\nEvaluate.` },
+      ];
 
     } else if (type === "score_conversation") {
       const categoryList = (categories || []).join(", ");
@@ -107,7 +158,10 @@ Score each category from 1-10. Respond in this exact JSON format:
 
 Respond with ONLY the JSON, nothing else.`;
 
-      userPrompt = `Here is the conversation log (${roundCount} rounds):\n\n${conversationLog}\n\nScore the student's performance across: ${categoryList}`;
+      messages = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `Here is the conversation log (${roundCount} rounds):\n\n${conversationLog}\n\nScore the student's performance across: ${categoryList}` },
+      ];
 
     } else {
       throw new Error("Invalid request type");
@@ -121,10 +175,7 @@ Respond with ONLY the JSON, nothing else.`;
       },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
+        messages,
       }),
     });
 
@@ -148,7 +199,9 @@ Respond with ONLY the JSON, nothing else.`;
     const content = data.choices?.[0]?.message?.content || "";
 
     let result;
-    if (type === "evaluate") {
+    if (type === "chat_start" || type === "chat_reply") {
+      result = { message: content };
+    } else if (type === "evaluate") {
       try {
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         result = jsonMatch ? JSON.parse(jsonMatch[0]) : { correct: false, feedback: content };
