@@ -17,6 +17,7 @@ export default function LearnDashboard() {
     academic: "🎓 Advanced Academic",
     beginner: "🌱 Beginner EFL",
     everyday: "✈️ Everyday Conversational",
+    intermediate: "📚 Intermediate School",
   };
 
   return (

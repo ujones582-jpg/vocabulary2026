@@ -6,13 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 
 const banks = [
   {
-    id: "academic" as WordBank,
-    icon: GraduationCap,
-    label: "Advanced Academic",
-    desc: "TOEFL · IELTS · SAT",
-    emoji: "🎓",
-  },
-  {
     id: "beginner" as WordBank,
     icon: Sprout,
     label: "Beginner EFL",
@@ -20,11 +13,25 @@ const banks = [
     emoji: "🌱",
   },
   {
+    id: "intermediate" as WordBank,
+    icon: BookOpen,
+    label: "Intermediate School",
+    desc: "Essays · Science · History · Debate",
+    emoji: "📚",
+  },
+  {
     id: "everyday" as WordBank,
     icon: Plane,
     label: "Everyday Conversational",
     desc: "Travel · Idioms · Phone calls",
     emoji: "✈️",
+  },
+  {
+    id: "academic" as WordBank,
+    icon: GraduationCap,
+    label: "Advanced Academic",
+    desc: "TOEFL · IELTS · SAT",
+    emoji: "🎓",
   },
 ];
 

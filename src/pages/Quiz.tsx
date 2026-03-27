@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, XCircle, ArrowRight, RotateCcw, MessageSquare } from "lucide-react";
 import type { WordBank } from "@/lib/vocabulary";
-import { getWordSets, generateQuizOptions, getWordBank } from "@/lib/vocabulary";
+import { getWordSets, getWordBank } from "@/lib/vocabulary";
 
 interface QuizQuestion {
   word: string;
@@ -20,10 +20,15 @@ export default function Quiz() {
   const allWords = getWordBank(bank);
 
   const questions = useMemo<QuizQuestion[]>(() => {
-    return setWords.map(w => ({
-      word: w.word,
-      options: generateQuizOptions(w, allWords),
-    }));
+    return setWords.map(w => {
+      const wrongWords = allWords.filter(aw => aw.word !== w.word);
+      const shuffled = wrongWords.sort(() => Math.random() - 0.5).slice(0, 3);
+      const options = [
+        { definition: w.definition, isCorrect: true },
+        ...shuffled.map(sw => ({ definition: sw.definition, isCorrect: false })),
+      ].sort(() => Math.random() - 0.5);
+      return { word: w.word, options };
+    });
   }, [setWords, allWords]);
 
   const [currentQ, setCurrentQ] = useState(0);
