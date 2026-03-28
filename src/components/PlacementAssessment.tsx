@@ -212,19 +212,25 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
                 </button>
 
                 {active && (
-                  <div className="grid grid-cols-2 gap-1.5 pl-2">
-                    {test.scoreRanges.map((range, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setTestScores(prev => ({ ...prev, [test.id]: idx }))}
-                        className={`text-xs py-2 px-3 rounded-md border transition-all
-                          ${testScores[test.id] === idx
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "bg-card border-border text-muted-foreground hover:border-foreground/20"}`}
-                      >
-                        {range.label}
-                      </button>
-                    ))}
+                  <div className="pl-2 mt-1">
+                    <input
+                      type="number"
+                      min={test.min}
+                      max={test.max}
+                      step={test.step ?? 1}
+                      placeholder={test.placeholder}
+                      value={testScores[test.id] ?? ""}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        if (!isNaN(val)) {
+                          setTestScores(prev => ({ ...prev, [test.id]: val }));
+                        } else {
+                          setTestScores(prev => { const n = { ...prev }; delete n[test.id]; return n; });
+                        }
+                      }}
+                      className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Score range: {test.placeholder}</p>
                   </div>
                 )}
               </div>
