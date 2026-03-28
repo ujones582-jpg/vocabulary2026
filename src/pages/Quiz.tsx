@@ -102,6 +102,7 @@ export default function Quiz() {
   const [results, setResults] = useState<(boolean | null)[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [showHint, setShowHint] = useState(false);
 
   if (questions.length > 0 && results.length === 0) {
     setResults(new Array(questions.length).fill(null));
@@ -155,6 +156,7 @@ export default function Quiz() {
     setMcqSelected(null);
     setSpellingInput("");
     setShowResult(false);
+    setShowHint(false);
     if (currentQ < questions.length - 1) setCurrentQ((i) => i + 1);
     else setFinished(true);
   }, [currentQ, questions.length]);
@@ -334,20 +336,31 @@ export default function Quiz() {
               <p className="text-base font-medium text-foreground leading-relaxed mb-2">{question.definition}</p>
               <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">{question.partOfSpeech}</span>
 
-              {/* Letter hint */}
-              <div className="mt-4 flex items-center gap-1.5">
-                <span className="text-sm font-bold text-primary">{question.answer[0].toUpperCase()}</span>
-                {Array.from({ length: question.answer.length - 1 }).map((_, i) => (
-                  <span key={i} className="w-3.5 h-0.5 bg-muted-foreground/30 rounded-full" />
-                ))}
-                <span className="text-xs text-muted-foreground ml-2">({question.answer.length} letters)</span>
-              </div>
+              {!showHint ? (
+                <button
+                  onClick={() => setShowHint(true)}
+                  className="mt-4 text-xs text-primary font-medium hover:underline transition-colors"
+                >
+                  Show hint
+                </button>
+              ) : (
+                <>
+                  {/* Letter hint */}
+                  <div className="mt-4 flex items-center gap-1.5">
+                    <span className="text-sm font-bold text-primary">{question.answer[0].toUpperCase()}</span>
+                    {Array.from({ length: question.answer.length - 1 }).map((_, i) => (
+                      <span key={i} className="w-3.5 h-0.5 bg-muted-foreground/30 rounded-full" />
+                    ))}
+                    <span className="text-xs text-muted-foreground ml-2">({question.answer.length} letters)</span>
+                  </div>
 
-              {/* Example sentence hint */}
-              {question.example && (
-                <p className="mt-3 text-sm text-muted-foreground italic leading-relaxed">
-                  &ldquo;{question.example.replace(new RegExp(question.answer, "gi"), "______")}&rdquo;
-                </p>
+                  {/* Example sentence hint */}
+                  {question.example && (
+                    <p className="mt-3 text-sm text-muted-foreground italic leading-relaxed">
+                      &ldquo;{question.example.replace(new RegExp(question.answer, "gi"), "______")}&rdquo;
+                    </p>
+                  )}
+                </>
               )}
             </div>
 
