@@ -71,6 +71,39 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_words: {
+        Row: {
+          bank: string
+          created_at: string | null
+          definition: string
+          example: string | null
+          id: string
+          part_of_speech: string
+          user_id: string
+          word: string
+        }
+        Insert: {
+          bank: string
+          created_at?: string | null
+          definition: string
+          example?: string | null
+          id?: string
+          part_of_speech: string
+          user_id: string
+          word: string
+        }
+        Update: {
+          bank?: string
+          created_at?: string | null
+          definition?: string
+          example?: string | null
+          id?: string
+          part_of_speech?: string
+          user_id?: string
+          word?: string
+        }
+        Relationships: []
+      }
       user_errors: {
         Row: {
           bank: string
