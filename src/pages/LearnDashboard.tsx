@@ -63,7 +63,7 @@ export default function LearnDashboard() {
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-orange-600 dark:text-orange-400">{counts.developing}</p>
-              <p className="text-[10px] text-muted-foreground">Dev.</p>
+              <p className="text-[10px] text-muted-foreground">Growing</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{counts.learnt}</p>
