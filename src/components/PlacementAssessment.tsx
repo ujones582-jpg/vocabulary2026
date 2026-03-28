@@ -312,7 +312,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
       <div className="min-h-screen flex flex-col px-5 py-8 max-w-md mx-auto">
         <div>
           <p className="text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1">
-            Question {vocabIdx + 1} of {vocabQuizWords.length}
+            Question {vocabIdx + 1} of {quizQuestions.length}
           </p>
           <h1 className="font-display text-2xl text-foreground leading-tight">
             What does "<span className="text-primary">{currentVocab.word}</span>" mean?
