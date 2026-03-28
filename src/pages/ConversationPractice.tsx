@@ -6,11 +6,14 @@ import { useAuth } from "@/hooks/useAuth";
 import type { WordBank } from "@/lib/vocabulary";
 import { getRoleForBank, getScoreCategories } from "@/lib/vocabulary";
 import { useToast } from "@/hooks/use-toast";
+import ConversationTopicPicker, { type ConversationTopic } from "@/components/ConversationTopicPicker";
+
 interface Message {
   id: string;
   role: "ai" | "user";
   content: string;
 }
+
 export default function ConversationPractice() {
   const [searchParams] = useSearchParams();
   const bank = (searchParams.get("bank") || "academic") as WordBank;
@@ -18,6 +21,8 @@ export default function ConversationPractice() {
   const { toast } = useToast();
   const { user } = useAuth();
   const roleInfo = getRoleForBank(bank);
+
+  const [selectedTopic, setSelectedTopic] = useState<ConversationTopic | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -26,15 +31,23 @@ export default function ConversationPractice() {
   const [scores, setScores] = useState<Record<string, number> | null>(null);
   const [scoringLoading, setScoringLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-  // Start conversation with an AI opening message (AI Calls to Supabase Functions)
-  const startConversation = useCallback(async () => {
+
+  const startConversation = useCallback(async (topic: ConversationTopic) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("vocab-chat", {
-        body: { type: "chat_start", bank, role: roleInfo.label },
+        body: {
+          type: "chat_start",
+          bank,
+          role: roleInfo.label,
+          topicType: topic.type,
+          topicPrompt: topic.prompt === "free" ? undefined : topic.prompt,
+          topicLabel: topic.label,
+        },
       });
       if (error) throw error;
       setMessages([{ id: Date.now().toString(), role: "ai", content: data?.message || "Hi there! How are you doing today?" }]);
@@ -45,10 +58,10 @@ export default function ConversationPractice() {
     }
   }, [bank, roleInfo]);
 
-  useEffect(() => {
-    startConversation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const handleTopicSelect = useCallback((topic: ConversationTopic) => {
+    setSelectedTopic(topic);
+    startConversation(topic);
+  }, [startConversation]);
 
   const handleSubmit = useCallback(async () => {
     if (!input.trim() || isLoading) return;
@@ -63,7 +76,15 @@ export default function ConversationPractice() {
     try {
       const history = updatedMessages.map(m => ({ role: m.role === "ai" ? "assistant" : "user", content: m.content }));
       const { data, error } = await supabase.functions.invoke("vocab-chat", {
-        body: { type: "chat_reply", bank, role: roleInfo.label, history },
+        body: {
+          type: "chat_reply",
+          bank,
+          role: roleInfo.label,
+          history,
+          topicType: selectedTopic?.type,
+          topicPrompt: selectedTopic?.prompt === "free" ? undefined : selectedTopic?.prompt,
+          topicLabel: selectedTopic?.label,
+        },
       });
       if (error) throw error;
       setMessages(prev => [...prev, {
@@ -75,7 +96,7 @@ export default function ConversationPractice() {
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, messages, bank, roleInfo, toast]);
+  }, [input, isLoading, messages, bank, roleInfo, selectedTopic, toast]);
 
   const handleLeaveAndScore = useCallback(async () => {
     if (roundCount < 2) {
@@ -113,9 +134,23 @@ export default function ConversationPractice() {
       setScoringLoading(false);
     }
   }, [roundCount, bank, messages, roleInfo, user, navigate]);
+
   const categories = getScoreCategories(bank);
-  // Scoring overlay instructions
-  if(showScoring){
+
+  // Topic picker (before conversation starts)
+  if (!selectedTopic) {
+    return (
+      <ConversationTopicPicker
+        bank={bank}
+        roleLabel={roleInfo.label}
+        onSelect={handleTopicSelect}
+        onBack={() => navigate(`/learn?bank=${bank}`)}
+      />
+    );
+  }
+
+  // Scoring overlay
+  if (showScoring) {
     return (
       <div className="min-h-screen flex flex-col max-w-md mx-auto items-center justify-center px-6 py-8">
         {scoringLoading ? (
@@ -171,7 +206,7 @@ export default function ConversationPractice() {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground">{roleInfo.label}</p>
           <p className="text-xs text-muted-foreground">
-            {roundCount === 0 ? "Start chatting!" : `${roundCount} exchange${roundCount !== 1 ? "s" : ""}`}
+            {selectedTopic.label}{roundCount > 0 ? ` · ${roundCount} exchange${roundCount !== 1 ? "s" : ""}` : ""}
           </p>
         </div>
         <button
