@@ -1,7 +1,7 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, BookOpen, Brain, MessageSquare, LogOut } from "lucide-react";
+import { ArrowLeft, BookOpen, Brain, MessageSquare, Settings, LogOut } from "lucide-react";
 import type { WordBank } from "@/lib/vocabulary";
-import { getWordSets, getRoleForBank } from "@/lib/vocabulary";
+import { getWordBank, getRoleForBank } from "@/lib/vocabulary";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function LearnDashboard() {
@@ -10,7 +10,7 @@ export default function LearnDashboard() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
 
-  const sets = getWordSets(bank);
+  const totalWords = getWordBank(bank).length;
   const roleInfo = getRoleForBank(bank);
 
   const bankLabels: Record<WordBank, string> = {
@@ -29,8 +29,14 @@ export default function LearnDashboard() {
         </button>
         <div className="flex-1">
           <p className="text-sm font-semibold text-foreground">{bankLabels[bank]}</p>
-          <p className="text-xs text-muted-foreground">{sets.length} sets · {sets.length * 10} words</p>
+          <p className="text-xs text-muted-foreground">{totalWords} words total</p>
         </div>
+        <button
+          onClick={() => navigate("/settings")}
+          className="p-1.5 rounded-md hover:bg-muted transition-colors active:scale-95"
+        >
+          <Settings className="w-5 h-5 text-muted-foreground" />
+        </button>
         <button
           onClick={() => navigate("/errors")}
           className="text-xs font-medium text-primary px-2.5 py-1 rounded-md bg-accent transition-colors active:scale-95"
@@ -41,52 +47,40 @@ export default function LearnDashboard() {
 
       {/* Learning path */}
       <div className="flex-1 px-4 py-6 space-y-6">
-        {/* Flashcard Sets */}
+        {/* Flashcards — single button, random 10 */}
         <section className="opacity-0 animate-fade-up">
           <div className="flex items-center gap-2 mb-3">
             <BookOpen className="w-4 h-4 text-primary" />
             <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">Study Flashcards</h2>
           </div>
           <p className="text-xs text-muted-foreground mb-4">
-            Learn the words first. Tap a set to start studying.
+            Each session picks 10 random words. Tap to flip and learn.
           </p>
-          <div className="grid grid-cols-2 gap-3">
-            {sets.map((set, i) => (
-              <button
-                key={i}
-                onClick={() => navigate(`/flashcards?bank=${bank}&set=${i}`)}
-                className="bg-card rounded-lg p-4 card-shadow text-left transition-all hover:card-shadow-hover active:scale-[0.97] opacity-0 animate-fade-up"
-                style={{ animationDelay: `${i * 40}ms` }}
-              >
-                <p className="text-lg font-bold text-foreground">Set {i + 1}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {set.slice(0, 3).map(w => w.word).join(", ")}…
-                </p>
-              </button>
-            ))}
-          </div>
+          <button
+            onClick={() => navigate(`/flashcards?bank=${bank}`)}
+            className="w-full bg-card rounded-lg p-5 card-shadow text-left transition-all hover:card-shadow-hover active:scale-[0.97]"
+          >
+            <p className="text-lg font-bold text-foreground">Start Flashcards</p>
+            <p className="text-xs text-muted-foreground mt-1">10 random words from your bank</p>
+          </button>
         </section>
 
-        {/* Quiz */}
+        {/* Quiz — single button */}
         <section className="opacity-0 animate-fade-up" style={{ animationDelay: "200ms" }}>
           <div className="flex items-center gap-2 mb-3">
             <Brain className="w-4 h-4 text-primary" />
             <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">Quick Quiz</h2>
           </div>
           <p className="text-xs text-muted-foreground mb-4">
-            Test yourself on any set. Wrong answers will be flagged for review.
+            Multiple choice + spelling. Wrong answers are saved for review.
           </p>
-          <div className="grid grid-cols-2 gap-3">
-            {sets.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => navigate(`/quiz?bank=${bank}&set=${i}`)}
-                className="bg-card rounded-lg p-4 card-shadow text-left transition-all hover:card-shadow-hover active:scale-[0.97]"
-              >
-                <p className="text-sm font-semibold text-foreground">Quiz Set {i + 1}</p>
-              </button>
-            ))}
-          </div>
+          <button
+            onClick={() => navigate(`/quiz?bank=${bank}`)}
+            className="w-full bg-card rounded-lg p-5 card-shadow text-left transition-all hover:card-shadow-hover active:scale-[0.97]"
+          >
+            <p className="text-lg font-bold text-foreground">Start Quiz</p>
+            <p className="text-xs text-muted-foreground mt-1">10 random questions: MCQ & spelling</p>
+          </button>
         </section>
 
         {/* Conversation Practice */}

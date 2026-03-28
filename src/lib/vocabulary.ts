@@ -1161,6 +1161,16 @@ export function getRandomWord(type: WordBank, exclude?: string): VocabWord {
   return filtered[Math.floor(Math.random() * filtered.length)];
 }
 
+export function getRandomWords(type: WordBank, count: number = 10): VocabWord[] {
+  const words = [...getWordBank(type)];
+  // Fisher-Yates shuffle
+  for (let i = words.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [words[i], words[j]] = [words[j], words[i]];
+  }
+  return words.slice(0, count);
+}
+
 const rolePrompts: Record<WordBank, { role: RoleType; label: string }> = {
   academic: { role: "examiner", label: "IELTS Examiner" },
   beginner: { role: "teacher", label: "Kind Teacher" },
