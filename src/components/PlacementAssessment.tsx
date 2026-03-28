@@ -158,6 +158,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
 
   const bankLabels: Record<WordBank, string> = {
     beginner: "Beginner EFL",
+    elementary: "Elementary",
     intermediate: "Upper Primary & Middle School",
     everyday: "Everyday Conversational",
     academic: "Advanced Academic",
@@ -166,6 +167,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
 
   const bankTags: Record<WordBank, string> = {
     beginner: "A1",
+    elementary: "A2",
     intermediate: "B1",
     everyday: "B2",
     academic: "C1",
