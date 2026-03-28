@@ -219,11 +219,11 @@ export default function ConversationPractice() {
 
                 {feedback.improvements?.length > 0 && (
                   <div>
-                    <p className="text-xs font-semibold text-amber-500 uppercase tracking-wider mb-1.5">Areas to Improve</p>
+                    <p className="text-xs font-semibold text-destructive uppercase tracking-wider mb-1.5">Areas to Improve</p>
                     <ul className="space-y-1">
                       {feedback.improvements.map((s, i) => (
                         <li key={i} className="text-sm text-foreground flex items-start gap-2">
-                          <TrendingUp className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                          <TrendingUp className="w-3.5 h-3.5 text-destructive mt-0.5 shrink-0" />
                           <span>{s}</span>
                         </li>
                       ))}
