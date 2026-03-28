@@ -31,14 +31,64 @@ const standardizedTests = [
     ]},
 ];
 
-const vocabQuizWords: { word: string; definition: string; level: WordBank; fakeDefinitions: string[] }[] = [
+type VocabQuestion = { word: string; definition: string; level: WordBank; fakeDefinitions: string[] };
+
+const vocabPool: VocabQuestion[] = [
+  // ── Beginner ──
   { word: "happy", definition: "feeling pleasure or joy", level: "beginner", fakeDefinitions: ["feeling tired", "a type of food", "to walk slowly"] },
+  { word: "friend", definition: "a person you know well and like", level: "beginner", fakeDefinitions: ["a kind of weather", "a large building", "to run quickly"] },
+  { word: "water", definition: "a clear liquid essential for life", level: "beginner", fakeDefinitions: ["a musical instrument", "a warm feeling", "a type of rock"] },
+  { word: "help", definition: "to make it easier for someone to do something", level: "beginner", fakeDefinitions: ["to break apart", "a loud sound", "a kind of plant"] },
+  { word: "bright", definition: "giving out or reflecting a lot of light", level: "beginner", fakeDefinitions: ["very heavy", "extremely slow", "a type of animal"] },
+
+  // ── Intermediate ──
   { word: "community", definition: "a group of people living in the same area or sharing interests", level: "intermediate", fakeDefinitions: ["a type of building", "a loud noise", "an old tradition"] },
+  { word: "generous", definition: "willing to give more than is expected", level: "intermediate", fakeDefinitions: ["very dangerous", "related to science", "extremely tired"] },
+  { word: "influence", definition: "the power to affect how someone thinks or behaves", level: "intermediate", fakeDefinitions: ["a type of illness", "a cooking method", "a piece of furniture"] },
+  { word: "curious", definition: "eager to know or learn something", level: "intermediate", fakeDefinitions: ["feeling angry", "very expensive", "related to sports"] },
+  { word: "essential", definition: "absolutely necessary or extremely important", level: "intermediate", fakeDefinitions: ["completely optional", "a type of fabric", "relating to desserts"] },
+
+  // ── Everyday ──
   { word: "elaborate", definition: "involving many carefully arranged parts or details", level: "everyday", fakeDefinitions: ["to destroy completely", "very small in size", "related to electricity"] },
+  { word: "compromise", definition: "an agreement reached by each side making concessions", level: "everyday", fakeDefinitions: ["to promise something secret", "a type of computer hardware", "a formal complaint"] },
+  { word: "resilient", definition: "able to recover quickly from difficulties", level: "everyday", fakeDefinitions: ["very fragile", "related to reptiles", "having a pleasant smell"] },
+  { word: "ambiguous", definition: "open to more than one interpretation", level: "everyday", fakeDefinitions: ["extremely ambitious", "a type of vehicle", "related to music"] },
+  { word: "inevitable", definition: "certain to happen and unavoidable", level: "everyday", fakeDefinitions: ["easily prevented", "a type of invention", "related to navigation"] },
+
+  // ── Academic ──
   { word: "ubiquitous", definition: "present, appearing, or found everywhere", level: "academic", fakeDefinitions: ["extremely rare", "related to underwater life", "having a strong smell"] },
   { word: "pragmatic", definition: "dealing with things sensibly and realistically", level: "academic", fakeDefinitions: ["overly dramatic", "relating to grammar rules", "very old-fashioned"] },
+  { word: "paradigm", definition: "a typical example or model of something", level: "academic", fakeDefinitions: ["a type of paradox", "a unit of measurement", "a mathematical formula"] },
+  { word: "empirical", definition: "based on observation or experience rather than theory", level: "academic", fakeDefinitions: ["related to an empire", "extremely emotional", "a type of chemical"] },
+  { word: "juxtapose", definition: "to place close together for comparison or contrast", level: "academic", fakeDefinitions: ["to arrange in order of size", "to remove completely", "to speak very loudly"] },
+
+  // ── Native / C2 ──
   { word: "equanimity", definition: "mental calmness and composure, especially in a difficult situation", level: "native", fakeDefinitions: ["physical balance and coordination", "fairness in legal proceedings", "equality between groups"] },
+  { word: "recalcitrant", definition: "stubbornly resistant to authority or control", level: "native", fakeDefinitions: ["easily persuaded", "related to mathematics", "a type of gemstone"] },
+  { word: "perspicacious", definition: "having a ready insight into and understanding of things", level: "native", fakeDefinitions: ["prone to sweating heavily", "related to perspective drawing", "easily distracted"] },
+  { word: "sycophant", definition: "a person who flatters someone important for personal gain", level: "native", fakeDefinitions: ["a large musical instrument", "a type of elephant", "someone who studies plants"] },
+  { word: "verisimilitude", definition: "the appearance of being true or real", level: "native", fakeDefinitions: ["the study of truth in philosophy", "a type of visual illusion", "exactness in measurements"] },
 ];
+
+const QUESTIONS_PER_LEVEL = 1;
+
+/** Pick one random question per level for a varied quiz each time */
+function pickQuizQuestions(): VocabQuestion[] {
+  const levels: WordBank[] = ["beginner", "intermediate", "everyday", "academic", "native"];
+  const picked: VocabQuestion[] = [];
+  for (const level of levels) {
+    const pool = vocabPool.filter(q => q.level === level);
+    picked.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+  // Add one extra academic question for better discrimination
+  const academicPool = vocabPool.filter(q => q.level === "academic");
+  const alreadyPicked = picked.find(p => p.level === "academic")!;
+  const remaining = academicPool.filter(q => q.word !== alreadyPicked.word);
+  if (remaining.length > 0) {
+    picked.splice(4, 0, remaining[Math.floor(Math.random() * remaining.length)]);
+  }
+  return picked;
+}
 
 type Step = "tests" | "vocab" | "result";
 
@@ -61,6 +111,7 @@ function scoreToBankFromTest(testId: string, score: number): WordBank {
 function computeRecommendation(
   testEntries: { testId: string; score: number }[],
   vocabCorrect: boolean[],
+  quizQuestions: VocabQuestion[],
 ): WordBank {
   const scores: Record<WordBank, number> = { beginner: 0, intermediate: 0, everyday: 0, academic: 0, native: 0 };
 
@@ -69,22 +120,17 @@ function computeRecommendation(
     scores[bank] += 3;
   });
 
-  // Weight from vocab quiz
-  vocabQuizWords.forEach((w, i) => {
+  quizQuestions.forEach((w, i) => {
     if (vocabCorrect[i]) {
-      // correct → they know this level, push them at or above
       const levelOrder: WordBank[] = ["beginner", "intermediate", "everyday", "academic", "native"];
       const idx = levelOrder.indexOf(w.level);
       if (idx < 4) scores[levelOrder[idx + 1]] += 1;
       else scores[w.level] += 1;
     } else {
-      // incorrect → this level or below
       scores[w.level] += 1;
     }
   });
 
-  // If no test answers, give vocab quiz more weight (already weighted by count)
-  // Pick highest-scoring bank
   const ranked = (Object.entries(scores) as [WordBank, number][]).sort((a, b) => b[1] - a[1]);
   return ranked[0][0];
 }
@@ -98,9 +144,10 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
   const [selectedTests, setSelectedTests] = useState<string[]>([]);
   const [testScores, setTestScores] = useState<Record<string, number>>({});
 
-  // Vocab quiz state
+  // Vocab quiz state — pick fresh random questions each mount
+  const [quizQuestions] = useState<VocabQuestion[]>(() => pickQuizQuestions());
   const [vocabIdx, setVocabIdx] = useState(0);
-  const [vocabAnswers, setVocabAnswers] = useState<(number | null)[]>(Array(vocabQuizWords.length).fill(null));
+  const [vocabAnswers, setVocabAnswers] = useState<(number | null)[]>(Array(6).fill(null));
   const [vocabRevealed, setVocabRevealed] = useState(false);
 
   // Result
@@ -146,30 +193,26 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
 
   const nextVocabQuestion = () => {
     setVocabRevealed(false);
-    if (vocabIdx < vocabQuizWords.length - 1) {
+    if (vocabIdx < quizQuestions.length - 1) {
       setVocabIdx(vocabIdx + 1);
     } else {
-      // Calculate result
       const testEntries = selectedTests
         .filter(id => testScores[id] !== undefined)
         .map(id => ({ testId: id, score: testScores[id] }));
-      const currentWord = vocabQuizWords;
       const correct = vocabAnswers.map((ans, i) => {
         if (ans === null) return false;
-        const w = currentWord[i];
+        const w = quizQuestions[i];
         const choices = shuffledChoices(w);
         return choices[ans!] === w.definition;
       });
-      const rec = computeRecommendation(testEntries, correct);
+      const rec = computeRecommendation(testEntries, correct, quizQuestions);
       setRecommendation(rec);
       setStep("result");
     }
   };
 
-  // Deterministic shuffle based on word
-  const shuffledChoices = (w: typeof vocabQuizWords[0]) => {
+  const shuffledChoices = (w: VocabQuestion) => {
     const all = [w.definition, ...w.fakeDefinitions];
-    // Simple stable shuffle using word char codes as seed
     const seed = w.word.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
     return all
       .map((v, i) => ({ v, sort: (seed * (i + 1) * 7) % 97 }))
@@ -177,7 +220,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
       .map(x => x.v);
   };
 
-  const currentVocab = vocabQuizWords[vocabIdx];
+  const currentVocab = quizQuestions[vocabIdx];
   const currentChoices = currentVocab ? shuffledChoices(currentVocab) : [];
   const isCurrentCorrect = vocabRevealed && vocabAnswers[vocabIdx] !== null
     ? currentChoices[vocabAnswers[vocabIdx]!] === currentVocab?.definition
@@ -269,7 +312,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
       <div className="min-h-screen flex flex-col px-5 py-8 max-w-md mx-auto">
         <div>
           <p className="text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1">
-            Question {vocabIdx + 1} of {vocabQuizWords.length}
+            Question {vocabIdx + 1} of {quizQuestions.length}
           </p>
           <h1 className="font-display text-2xl text-foreground leading-tight">
             What does "<span className="text-primary">{currentVocab.word}</span>" mean?
@@ -280,7 +323,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
         <div className="w-full h-1 bg-muted rounded-full mt-4">
           <div
             className="h-1 bg-primary rounded-full transition-all duration-300"
-            style={{ width: `${((vocabIdx + 1) / vocabQuizWords.length) * 100}%` }}
+            style={{ width: `${((vocabIdx + 1) / quizQuestions.length) * 100}%` }}
           />
         </div>
 
@@ -328,7 +371,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
               onClick={nextVocabQuestion}
               className="w-full py-3.5 rounded-lg font-semibold text-sm bg-primary text-primary-foreground transition-all active:scale-[0.97] flex items-center justify-center gap-2"
             >
-              {vocabIdx < vocabQuizWords.length - 1 ? "Next Question" : "See My Result"}
+              {vocabIdx < quizQuestions.length - 1 ? "Next Question" : "See My Result"}
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
