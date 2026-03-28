@@ -1314,7 +1314,7 @@ const intermediateWords: VocabWord[] = [
   { word: "recent", definition: "having happened or been done a short time ago", partOfSpeech: "adjective" },
   { word: "temporary", definition: "lasting for only a limited period of time; not permanent", partOfSpeech: "adjective" },
   // Set 17: Social & Emotional
-  { word: "apologize", definition: "to say you are sorry for something you did wrong", partOfSpeech: "verb" },
+  { word: "forgive", definition: "to stop feeling angry at someone for something they did wrong", partOfSpeech: "verb" },
   { word: "communicate", definition: "to share or exchange information, ideas, or feelings", partOfSpeech: "verb" },
   { word: "cooperate", definition: "to work together with others to achieve a common goal", partOfSpeech: "verb" },
   { word: "disagreement", definition: "a situation where people have different opinions", partOfSpeech: "noun" },
@@ -1381,7 +1381,7 @@ const intermediateWords: VocabWord[] = [
   { word: "display", definition: "to show something so that people can see it", partOfSpeech: "verb" },
   { word: "disturb", definition: "to interrupt or bother someone; to cause worry", partOfSpeech: "verb" },
   { word: "effect", definition: "a change that is a result of an action or other cause", partOfSpeech: "noun" },
-  { word: "enormous", definition: "very large in size, quantity, or extent", partOfSpeech: "adjective" },
+  { word: "vast", definition: "extremely large in area, size, or amount", partOfSpeech: "adjective" },
   { word: "environment", definition: "the natural world around us; surroundings", partOfSpeech: "noun" },
   { word: "establish", definition: "to set up something on a firm or permanent basis", partOfSpeech: "verb" },
   { word: "evaluate", definition: "to judge the value or quality of something", partOfSpeech: "verb" },
