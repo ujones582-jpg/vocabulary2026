@@ -35,6 +35,28 @@ export default function Settings() {
     }
   };
 
+  const handleAssessmentSelect = async (bank: WordBank) => {
+    setSaving(true);
+    const error = await saveBank(bank);
+    setSaving(false);
+    if (error) {
+      toast({ title: "Error", description: "Failed to update preference.", variant: "destructive" });
+    } else {
+      toast({ title: "Switched", description: `Now using ${banks.find(x => x.id === bank)?.label}.` });
+      setShowAssessment(false);
+      navigate(`/learn?bank=${bank}`);
+    }
+  };
+
+  if (showAssessment) {
+    return (
+      <PlacementAssessment
+        onSelect={handleAssessmentSelect}
+        onBack={() => setShowAssessment(false)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto">
       <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center gap-3">
@@ -50,6 +72,14 @@ export default function Settings() {
           <p className="text-xs text-muted-foreground mb-4">
             Your progress is saved separately for each level. Switching won't erase anything.
           </p>
+
+          <button
+            onClick={() => setShowAssessment(true)}
+            className="w-full mb-3 py-2.5 rounded-lg text-sm font-medium border border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Retake placement assessment
+          </button>
 
           <div className="space-y-2">
             {banks.map(b => (
