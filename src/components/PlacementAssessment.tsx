@@ -154,7 +154,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
         const choices = shuffledChoices(w);
         return choices[ans!] === w.definition;
       });
-      const rec = computeRecommendation(testAnswers, correct);
+      const rec = computeRecommendation(testEntries, correct);
       setRecommendation(rec);
       setStep("result");
     }
