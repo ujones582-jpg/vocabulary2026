@@ -1133,6 +1133,8 @@ const advancedSchoolWords: VocabWord[] = [
   { word: "tentative", definition: "not certain or fixed; provisional; done without confidence", partOfSpeech: "adjective" },
   { word: "viable", definition: "capable of working successfully; feasible", partOfSpeech: "adjective" },
   { word: "ambiguity", definition: "the quality of being open to more than one interpretation; inexactness", partOfSpeech: "noun" },
+];
+
 // ─── INTERMEDIATE WORDS (250) — Upper Primary & Middle School (US Grades 4–8) ──
 const intermediateWords: VocabWord[] = [
   // Set 1: Describing Things
