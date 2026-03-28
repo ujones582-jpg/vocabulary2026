@@ -1476,6 +1476,13 @@ export function getScoreCategories(bank: WordBank): ScoreCategory[] {
         { key: "fluency", label: "Fluency", description: "Does your writing flow effectively?" },
         { key: "coherence", label: "Coherence", description: "Are your ideas logically connected?" },
       ];
+    case "native":
+      return [
+        { key: "precision", label: "Precision", description: "Do you choose the exact right word?" },
+        { key: "sophistication", label: "Sophistication", description: "Is your language nuanced and layered?" },
+        { key: "rhetoric", label: "Rhetoric", description: "Do you persuade and argue effectively?" },
+        { key: "register", label: "Register", description: "Do you adapt tone to context?" },
+      ];
   }
 }
 
