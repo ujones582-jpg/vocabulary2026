@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Send, Loader2, LogOut as LeaveIcon } from "lucide-react";
+import { ArrowLeft, Send, Loader2, LogOut as LeaveIcon, Star, TrendingUp, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { WordBank } from "@/lib/vocabulary";
