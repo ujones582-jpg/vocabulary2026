@@ -411,13 +411,35 @@ export default function Quiz() {
                 autoFocus
               />
               {showResult && !results[currentQ] && (
-                <p className="text-center mt-3 text-sm">
-                  <span className="text-muted-foreground">Correct: </span>
-                  <span className="font-bold text-success">{question.answer}</span>
-                </p>
+                <>
+                  <p className="text-center mt-3 text-sm">
+                    <span className="text-muted-foreground">Correct: </span>
+                    <span className="font-bold text-success">{question.answer}</span>
+                  </p>
+                  <button
+                    onClick={() => handleOverride(true)}
+                    className="mt-2 mx-auto block text-xs font-medium text-primary hover:underline transition-colors"
+                  >
+                    Override: I was correct
+                  </button>
+                </>
               )}
               {showResult && results[currentQ] && (
-                <p className="text-center mt-3 text-sm text-success font-medium">Correct</p>
+                <>
+                  <p className="text-center mt-3 text-sm text-success font-medium">
+                    {spellingInput.trim().toLowerCase() !== question.answer.toLowerCase() ? (
+                      <>Close enough! <span className="text-muted-foreground font-normal">({question.answer})</span></>
+                    ) : "Correct"}
+                  </p>
+                  {spellingInput.trim().toLowerCase() !== question.answer.toLowerCase() && (
+                    <button
+                      onClick={() => handleOverride(false)}
+                      className="mt-2 mx-auto block text-xs font-medium text-destructive hover:underline transition-colors"
+                    >
+                      Override: I was incorrect
+                    </button>
+                  )}
+                </>
               )}
             </div>
 
