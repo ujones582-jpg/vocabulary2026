@@ -125,6 +125,13 @@ export default function LearnDashboard() {
             <MessageSquare className="w-4 h-4" />
             Start Conversation
           </button>
+          <button
+            onClick={() => navigate(`/chat-history?bank=${bank}`)}
+            className="w-full mt-2 py-2 text-xs font-medium text-primary flex items-center justify-center gap-1.5 hover:bg-accent rounded-md transition-colors"
+          >
+            <History className="w-3.5 h-3.5" />
+            View Chat History
+          </button>
         </section>
       </div>
 
