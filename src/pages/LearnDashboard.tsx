@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, BookOpen, Brain, MessageSquare, Settings, LogOut, List } from "lucide-react";
+import { ArrowLeft, BookOpen, Brain, MessageSquare, Settings, LogOut, List, History } from "lucide-react";
 import type { WordBank } from "@/lib/vocabulary";
 import { getWordBank, getRoleForBank } from "@/lib/vocabulary";
 import { useAuth } from "@/hooks/useAuth";
@@ -124,6 +124,13 @@ export default function LearnDashboard() {
           <button onClick={() => navigate(`/practice?bank=${bank}`)} className="w-full bg-primary text-primary-foreground rounded-lg p-4 text-sm font-semibold transition-all active:scale-[0.97] flex items-center justify-center gap-2">
             <MessageSquare className="w-4 h-4" />
             Start Conversation
+          </button>
+          <button
+            onClick={() => navigate(`/chat-history?bank=${bank}`)}
+            className="w-full mt-2 py-2 text-xs font-medium text-primary flex items-center justify-center gap-1.5 hover:bg-accent rounded-md transition-colors"
+          >
+            <History className="w-3.5 h-3.5" />
+            View Chat History
           </button>
         </section>
       </div>

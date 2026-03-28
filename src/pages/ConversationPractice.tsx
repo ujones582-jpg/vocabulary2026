@@ -116,6 +116,17 @@ export default function ConversationPractice() {
           rounds_completed: roundCount,
         });
       }
+
+      // Save conversation history
+      if (user) {
+        await supabase.from("conversation_history").insert({
+          user_id: user.id,
+          bank,
+          role_label: roleInfo.label,
+          messages: messages.map(m => ({ role: m.role, content: m.content })),
+          rounds_completed: roundCount,
+        });
+      }
     } catch {
       setScores(null);
     } finally {
