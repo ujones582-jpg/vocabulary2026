@@ -4,6 +4,7 @@ import path from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "/vocabulary2026/", //constructing the base of the project smp.bool
   server: {
     host: "::",
     port: 8080,
