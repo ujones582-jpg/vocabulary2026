@@ -144,9 +144,9 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
       setVocabIdx(vocabIdx + 1);
     } else {
       // Calculate result
-      const testAnswers = selectedTests
+      const testEntries = selectedTests
         .filter(id => testScores[id] !== undefined)
-        .map(id => ({ testId: id, rangeIdx: testScores[id] }));
+        .map(id => ({ testId: id, score: testScores[id] }));
       const currentWord = vocabQuizWords;
       const correct = vocabAnswers.map((ans, i) => {
         if (ans === null) return false;
