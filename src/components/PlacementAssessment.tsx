@@ -5,24 +5,27 @@ import type { WordBank } from "@/lib/vocabulary";
 /* ── Assessment config ─────────────────────────────────────── */
 
 const standardizedTests = [
-  { id: "toefl", label: "TOEFL", scoreRanges: [
-    { label: "Below 40", value: 30, bank: "beginner" as WordBank },
-    { label: "40–60", value: 50, bank: "intermediate" as WordBank },
-    { label: "61–90", value: 75, bank: "everyday" as WordBank },
-    { label: "91–120", value: 105, bank: "academic" as WordBank },
-  ]},
-  { id: "ielts", label: "IELTS", scoreRanges: [
-    { label: "Below 4.0", value: 3, bank: "beginner" as WordBank },
-    { label: "4.0–5.5", value: 4.5, bank: "intermediate" as WordBank },
-    { label: "6.0–7.0", value: 6.5, bank: "everyday" as WordBank },
-    { label: "7.5–9.0", value: 8, bank: "academic" as WordBank },
-  ]},
-  { id: "sat", label: "SAT (Reading & Writing)", scoreRanges: [
-    { label: "Below 400", value: 350, bank: "beginner" as WordBank },
-    { label: "400–530", value: 465, bank: "intermediate" as WordBank },
-    { label: "530–650", value: 590, bank: "everyday" as WordBank },
-    { label: "650–800", value: 725, bank: "academic" as WordBank },
-  ]},
+  { id: "toefl", label: "TOEFL", min: 0, max: 120, placeholder: "0–120",
+    thresholds: [
+      { cutoff: 40, bank: "beginner" as WordBank },
+      { cutoff: 61, bank: "intermediate" as WordBank },
+      { cutoff: 91, bank: "everyday" as WordBank },
+      { cutoff: 121, bank: "academic" as WordBank },
+    ]},
+  { id: "ielts", label: "IELTS", min: 0, max: 9, placeholder: "0–9", step: 0.5,
+    thresholds: [
+      { cutoff: 4, bank: "beginner" as WordBank },
+      { cutoff: 6, bank: "intermediate" as WordBank },
+      { cutoff: 7.5, bank: "everyday" as WordBank },
+      { cutoff: 10, bank: "academic" as WordBank },
+    ]},
+  { id: "sat", label: "SAT (Reading & Writing)", min: 200, max: 800, placeholder: "200–800",
+    thresholds: [
+      { cutoff: 400, bank: "beginner" as WordBank },
+      { cutoff: 530, bank: "intermediate" as WordBank },
+      { cutoff: 650, bank: "everyday" as WordBank },
+      { cutoff: 801, bank: "academic" as WordBank },
+    ]},
 ];
 
 const vocabQuizWords: { word: string; definition: string; level: WordBank; fakeDefinitions: string[] }[] = [
@@ -42,19 +45,24 @@ interface Props {
 
 /* ── Scoring algorithm ─────────────────────────────────────── */
 
+function scoreToBankFromTest(testId: string, score: number): WordBank {
+  const test = standardizedTests.find(t => t.id === testId);
+  if (!test) return "beginner";
+  for (const t of test.thresholds) {
+    if (score < t.cutoff) return t.bank;
+  }
+  return "academic";
+}
+
 function computeRecommendation(
-  testAnswers: { testId: string; rangeIdx: number }[],
+  testEntries: { testId: string; score: number }[],
   vocabCorrect: boolean[],
 ): WordBank {
   const scores: Record<WordBank, number> = { beginner: 0, intermediate: 0, everyday: 0, academic: 0 };
 
-  // Weight from test scores
-  testAnswers.forEach(({ testId, rangeIdx }) => {
-    const test = standardizedTests.find(t => t.id === testId);
-    if (test) {
-      const bank = test.scoreRanges[rangeIdx].bank;
-      scores[bank] += 3; // strong signal
-    }
+  testEntries.forEach(({ testId, score }) => {
+    const bank = scoreToBankFromTest(testId, score);
+    scores[bank] += 3;
   });
 
   // Weight from vocab quiz
@@ -136,9 +144,9 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
       setVocabIdx(vocabIdx + 1);
     } else {
       // Calculate result
-      const testAnswers = selectedTests
+      const testEntries = selectedTests
         .filter(id => testScores[id] !== undefined)
-        .map(id => ({ testId: id, rangeIdx: testScores[id] }));
+        .map(id => ({ testId: id, score: testScores[id] }));
       const currentWord = vocabQuizWords;
       const correct = vocabAnswers.map((ans, i) => {
         if (ans === null) return false;
@@ -146,7 +154,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
         const choices = shuffledChoices(w);
         return choices[ans!] === w.definition;
       });
-      const rec = computeRecommendation(testAnswers, correct);
+      const rec = computeRecommendation(testEntries, correct);
       setRecommendation(rec);
       setStep("result");
     }
@@ -204,19 +212,25 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
                 </button>
 
                 {active && (
-                  <div className="grid grid-cols-2 gap-1.5 pl-2">
-                    {test.scoreRanges.map((range, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setTestScores(prev => ({ ...prev, [test.id]: idx }))}
-                        className={`text-xs py-2 px-3 rounded-md border transition-all
-                          ${testScores[test.id] === idx
-                            ? "bg-primary text-primary-foreground border-primary"
-                            : "bg-card border-border text-muted-foreground hover:border-foreground/20"}`}
-                      >
-                        {range.label}
-                      </button>
-                    ))}
+                  <div className="pl-2 mt-1">
+                    <input
+                      type="number"
+                      min={test.min}
+                      max={test.max}
+                      step={test.step ?? 1}
+                      placeholder={test.placeholder}
+                      value={testScores[test.id] ?? ""}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        if (!isNaN(val)) {
+                          setTestScores(prev => ({ ...prev, [test.id]: val }));
+                        } else {
+                          setTestScores(prev => { const n = { ...prev }; delete n[test.id]; return n; });
+                        }
+                      }}
+                      className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Score range: {test.placeholder}</p>
                   </div>
                 )}
               </div>
