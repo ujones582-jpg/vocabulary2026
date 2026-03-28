@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { X, Search, Eye, BookCheck, Crown, EyeOff } from "lucide-react";
+import { X, Search, Eye, BookCheck, Crown, EyeOff, RefreshCw } from "lucide-react";
 import type { WordStatusLevel } from "@/hooks/useWordStatus";
 import type { VocabWord } from "@/lib/vocabulary";
 
@@ -8,12 +8,13 @@ interface Props {
   onClose: () => void;
   words: VocabWord[];
   getStatus: (word: string) => WordStatusLevel;
-  counts: { unseen: number; seen: number; learnt: number; mastered: number };
+  counts: { unseen: number; seen: number; developing: number; learnt: number; mastered: number };
 }
 
 const statusConfig: Record<WordStatusLevel, { icon: React.ElementType; label: string; colorClass: string; bgClass: string }> = {
   unseen: { icon: EyeOff, label: "Unseen", colorClass: "text-muted-foreground", bgClass: "bg-muted" },
   seen: { icon: Eye, label: "Seen", colorClass: "text-amber-600 dark:text-amber-400", bgClass: "bg-amber-500/10" },
+  developing: { icon: RefreshCw, label: "Developing", colorClass: "text-orange-600 dark:text-orange-400", bgClass: "bg-orange-500/10" },
   learnt: { icon: BookCheck, label: "Learnt", colorClass: "text-blue-600 dark:text-blue-400", bgClass: "bg-blue-500/10" },
   mastered: { icon: Crown, label: "Mastered", colorClass: "text-emerald-600 dark:text-emerald-400", bgClass: "bg-emerald-500/10" },
 };
@@ -70,7 +71,7 @@ export default function WordDetailsModal({ open, onClose, words, getStatus, coun
         >
           All ({words.length})
         </button>
-        {(["unseen", "seen", "learnt", "mastered"] as WordStatusLevel[]).map((s) => {
+        {(["unseen", "seen", "developing", "learnt", "mastered"] as WordStatusLevel[]).map((s) => {
           const cfg = statusConfig[s];
           return (
             <button
