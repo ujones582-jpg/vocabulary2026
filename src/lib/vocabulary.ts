@@ -880,8 +880,8 @@ const everydayWords: VocabWord[] = [
   { word: "under the weather", definition: "feeling slightly ill or unwell", partOfSpeech: "phrase" },
 ];
 
-// ─── INTERMEDIATE WORDS (380) — School English ────────────
-const intermediateWords: VocabWord[] = [
+// ─── ADVANCED SCHOOL WORDS (merged into Academic) ────────────
+const advancedSchoolWords: VocabWord[] = [
   // Set 1: Core School Words
   { word: "analyze", definition: "to examine something in detail to understand it or explain it", partOfSpeech: "verb" },
   { word: "conclude", definition: "to bring to an end; to reach a judgment or opinion by reasoning", partOfSpeech: "verb" },
