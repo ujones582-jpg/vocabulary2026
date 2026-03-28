@@ -30,13 +30,5 @@ export function useUserPreference() {
     return error;
   }, [user]);
 
-  const clearProgress = useCallback(async () => {
-    if (!user) return;
-    // Delete all progress for the user
-    await supabase.from("user_progress").delete().eq("user_id", user.id);
-    await supabase.from("user_errors").delete().eq("user_id", user.id);
-    await supabase.from("conversation_scores").delete().eq("user_id", user.id);
-  }, [user]);
-
-  return { bank, loading, saveBank, clearProgress, hasPreference: bank !== null };
+  return { bank, loading, saveBank, hasPreference: bank !== null };
 }

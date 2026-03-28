@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Trash2, BookOpen, Loader2 } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Trash2, BookOpen, Loader2, Brain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,8 @@ interface ErrorEntry {
 
 export default function ErrorBank() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const bank = searchParams.get("bank") || "";
   const { user } = useAuth();
   const { toast } = useToast();
   const [entries, setEntries] = useState<ErrorEntry[]>([]);
@@ -49,6 +51,8 @@ export default function ErrorBank() {
     else setEntries([]);
   };
 
+  const uniqueWords = [...new Set(entries.map(e => e.word))];
+
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto">
       <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center gap-3">
@@ -65,6 +69,19 @@ export default function ErrorBank() {
           </button>
         )}
       </div>
+
+      {/* Practice button */}
+      {uniqueWords.length >= 2 && (
+        <div className="px-4 pt-4">
+          <button
+            onClick={() => navigate(`/quiz?bank=${bank}&source=errors`)}
+            className="w-full py-3 rounded-lg bg-primary text-primary-foreground text-sm font-semibold transition-all active:scale-[0.97] flex items-center justify-center gap-2"
+          >
+            <Brain className="w-4 h-4" />
+            Practice these mistakes ({uniqueWords.length} words)
+          </button>
+        </div>
+      )}
 
       <div className="flex-1 px-4 py-4">
         {loading ? (
@@ -99,7 +116,7 @@ export default function ErrorBank() {
                     <p className="text-xs text-muted-foreground font-medium mb-0.5">Your answer</p>
                     <p className="text-foreground leading-relaxed">{entry.user_sentence}</p>
                   </div>
-                  <div className="bg-success/5 rounded p-2.5 border border-success/10">
+                  <div className="bg-accent rounded p-2.5 border border-border">
                     <p className="text-xs text-muted-foreground font-medium mb-0.5">Correction</p>
                     <p className="text-foreground leading-relaxed">{entry.correction}</p>
                   </div>

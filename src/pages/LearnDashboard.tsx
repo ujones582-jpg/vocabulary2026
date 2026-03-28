@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { BookOpen, Brain, MessageSquare, Settings, LogOut, List, History, Plus } from "lucide-react";
+import { BookOpen, Brain, MessageSquare, Settings, LogOut, List, History, Plus, Flame } from "lucide-react";
 import type { WordBank } from "@/lib/vocabulary";
 import { getWordBank, getRoleForBank } from "@/lib/vocabulary";
 import { useAuth } from "@/hooks/useAuth";
 import { useWordStatus } from "@/hooks/useWordStatus";
 import { useCustomWords } from "@/hooks/useCustomWords";
+import { supabase } from "@/integrations/supabase/client";
 import WordStatusPortal from "@/components/WordStatusPortal";
 import WordDetailsModal from "@/components/WordDetailsModal";
 import AddWordModal from "@/components/AddWordModal";
@@ -14,7 +15,7 @@ export default function LearnDashboard() {
   const [searchParams] = useSearchParams();
   const bank = (searchParams.get("bank") || "academic") as WordBank;
   const navigate = useNavigate();
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const { customWords, addWord } = useCustomWords(bank);
   const { counts, getStatus, loading, manualPromote } = useWordStatus(bank, customWords);
 
@@ -33,6 +34,33 @@ export default function LearnDashboard() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [addWordOpen, setAddWordOpen] = useState(false);
 
+  // Daily stats
+  const [todayCount, setTodayCount] = useState(0);
+  const [errorCount, setErrorCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayISO = today.toISOString();
+
+    // Words touched today
+    supabase
+      .from("word_status")
+      .select("word", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("bank", bank)
+      .gte("updated_at", todayISO)
+      .then(({ count }) => setTodayCount(count || 0));
+
+    // Error count
+    supabase
+      .from("user_errors")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .then(({ count }) => setErrorCount(count || 0));
+  }, [user, bank, counts]);
+
   const portalWords = allWords.map((w) => ({ word: w.word, status: getStatus(w.word) }));
 
   return (
@@ -49,14 +77,25 @@ export default function LearnDashboard() {
         <button onClick={() => navigate("/settings")} className="p-1.5 rounded hover:bg-muted transition-colors active:scale-95">
           <Settings className="w-5 h-5 text-muted-foreground" />
         </button>
-        <button onClick={() => navigate("/errors")} className="text-xs font-medium text-foreground px-2.5 py-1 rounded border border-border hover:bg-muted transition-colors active:scale-95">
-          Errors
-        </button>
+        {errorCount > 0 && (
+          <button onClick={() => navigate(`/errors?bank=${bank}`)} className="text-xs font-medium text-foreground px-2.5 py-1 rounded border border-border hover:bg-muted transition-colors active:scale-95">
+            Errors ({errorCount})
+          </button>
+        )}
       </div>
 
-      {/* Progress */}
+      {/* Daily stat + Progress */}
       {!loading && (
-        <div className="px-4 pt-4">
+        <div className="px-4 pt-4 space-y-3">
+          {/* Today's activity */}
+          <div className="flex items-center gap-2.5 bg-card rounded-lg px-3.5 py-2.5 border border-border">
+            <Flame className="w-4 h-4 text-primary shrink-0" />
+            <p className="text-sm text-foreground flex-1">
+              <span className="font-bold">{todayCount}</span>{" "}
+              <span className="text-muted-foreground">words touched today</span>
+            </p>
+          </div>
+
           <div className="grid grid-cols-5 gap-2 bg-card rounded-lg p-3 border border-border">
             <div className="text-center">
               <p className="text-lg font-bold text-muted-foreground">{counts.unseen}</p>
