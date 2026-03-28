@@ -10,21 +10,24 @@ const standardizedTests = [
       { cutoff: 40, bank: "beginner" as WordBank },
       { cutoff: 61, bank: "intermediate" as WordBank },
       { cutoff: 91, bank: "everyday" as WordBank },
-      { cutoff: 121, bank: "academic" as WordBank },
+      { cutoff: 106, bank: "academic" as WordBank },
+      { cutoff: 121, bank: "native" as WordBank },
     ]},
   { id: "ielts", label: "IELTS", min: 0, max: 9, placeholder: "0–9", step: 0.5,
     thresholds: [
       { cutoff: 4, bank: "beginner" as WordBank },
       { cutoff: 6, bank: "intermediate" as WordBank },
       { cutoff: 7.5, bank: "everyday" as WordBank },
-      { cutoff: 10, bank: "academic" as WordBank },
+      { cutoff: 8.5, bank: "academic" as WordBank },
+      { cutoff: 10, bank: "native" as WordBank },
     ]},
   { id: "sat", label: "SAT (Reading & Writing)", min: 200, max: 800, placeholder: "200–800",
     thresholds: [
       { cutoff: 400, bank: "beginner" as WordBank },
       { cutoff: 530, bank: "intermediate" as WordBank },
       { cutoff: 650, bank: "everyday" as WordBank },
-      { cutoff: 801, bank: "academic" as WordBank },
+      { cutoff: 730, bank: "academic" as WordBank },
+      { cutoff: 801, bank: "native" as WordBank },
     ]},
 ];
 
@@ -34,6 +37,7 @@ const vocabQuizWords: { word: string; definition: string; level: WordBank; fakeD
   { word: "elaborate", definition: "involving many carefully arranged parts or details", level: "everyday", fakeDefinitions: ["to destroy completely", "very small in size", "related to electricity"] },
   { word: "ubiquitous", definition: "present, appearing, or found everywhere", level: "academic", fakeDefinitions: ["extremely rare", "related to underwater life", "having a strong smell"] },
   { word: "pragmatic", definition: "dealing with things sensibly and realistically", level: "academic", fakeDefinitions: ["overly dramatic", "relating to grammar rules", "very old-fashioned"] },
+  { word: "equanimity", definition: "mental calmness and composure, especially in a difficult situation", level: "native", fakeDefinitions: ["physical balance and coordination", "fairness in legal proceedings", "equality between groups"] },
 ];
 
 type Step = "tests" | "vocab" | "result";
@@ -51,14 +55,14 @@ function scoreToBankFromTest(testId: string, score: number): WordBank {
   for (const t of test.thresholds) {
     if (score < t.cutoff) return t.bank;
   }
-  return "academic";
+  return "native";
 }
 
 function computeRecommendation(
   testEntries: { testId: string; score: number }[],
   vocabCorrect: boolean[],
 ): WordBank {
-  const scores: Record<WordBank, number> = { beginner: 0, intermediate: 0, everyday: 0, academic: 0 };
+  const scores: Record<WordBank, number> = { beginner: 0, intermediate: 0, everyday: 0, academic: 0, native: 0 };
 
   testEntries.forEach(({ testId, score }) => {
     const bank = scoreToBankFromTest(testId, score);
@@ -69,9 +73,9 @@ function computeRecommendation(
   vocabQuizWords.forEach((w, i) => {
     if (vocabCorrect[i]) {
       // correct → they know this level, push them at or above
-      const levelOrder: WordBank[] = ["beginner", "intermediate", "everyday", "academic"];
+      const levelOrder: WordBank[] = ["beginner", "intermediate", "everyday", "academic", "native"];
       const idx = levelOrder.indexOf(w.level);
-      if (idx < 3) scores[levelOrder[idx + 1]] += 1;
+      if (idx < 4) scores[levelOrder[idx + 1]] += 1;
       else scores[w.level] += 1;
     } else {
       // incorrect → this level or below
@@ -107,6 +111,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
     intermediate: "Upper Primary & Middle School",
     everyday: "Everyday Conversational",
     academic: "Advanced Academic",
+    native: "Native & University / Work",
   };
 
   const bankTags: Record<WordBank, string> = {
@@ -114,6 +119,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
     intermediate: "B1",
     everyday: "B2",
     academic: "C1",
+    native: "C2",
   };
 
   /* ── Handlers ── */
