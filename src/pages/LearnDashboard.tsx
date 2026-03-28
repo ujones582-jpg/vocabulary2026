@@ -39,9 +39,6 @@ export default function LearnDashboard() {
     <div className="min-h-screen flex flex-col max-w-md mx-auto">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center gap-3">
-        <button onClick={() => navigate("/")} className="p-1.5 rounded hover:bg-muted transition-colors active:scale-95">
-          <ArrowLeft className="w-5 h-5 text-foreground" />
-        </button>
         <div className="flex-1">
           <p className="text-sm font-semibold text-foreground">{bankLabels[bank]}</p>
           <p className="text-xs text-muted-foreground">{totalWords} words</p>
