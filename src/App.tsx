@@ -32,7 +32,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 const AppRoutes = () => (
-  <BrowserRouter>
+  <BrowserRouter basename="/vocabulary2026">
     <Routes>
       <Route path="/auth" element={<Auth />} />
       <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
