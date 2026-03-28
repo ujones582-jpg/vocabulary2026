@@ -6,20 +6,17 @@ import { useAuth } from "@/hooks/useAuth";
 import type { WordBank } from "@/lib/vocabulary";
 import { getRoleForBank, getScoreCategories } from "@/lib/vocabulary";
 import { useToast } from "@/hooks/use-toast";
-
 interface Message {
   id: string;
   role: "ai" | "user";
   content: string;
 }
-
 export default function ConversationPractice() {
   const [searchParams] = useSearchParams();
   const bank = (searchParams.get("bank") || "academic") as WordBank;
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-
   const roleInfo = getRoleForBank(bank);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -29,11 +26,9 @@ export default function ConversationPractice() {
   const [scores, setScores] = useState<Record<string, number> | null>(null);
   const [scoringLoading, setScoringLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
   // Start conversation with an AI opening message
   const startConversation = useCallback(async () => {
     setIsLoading(true);
@@ -89,11 +84,9 @@ export default function ConversationPractice() {
     }
     setScoringLoading(true);
     setShowScoring(true);
-
     try {
       const categories = getScoreCategories(bank);
       const conversationLog = messages.map(m => `[${m.role === "ai" ? "AI" : "Student"}]: ${m.content}`).join("\n");
-
       const { data, error } = await supabase.functions.invoke("vocab-chat", {
         body: {
           type: "score_conversation",
@@ -104,10 +97,8 @@ export default function ConversationPractice() {
           roundCount,
         },
       });
-
       if (error) throw error;
       setScores(data?.scores || null);
-
       if (user && data?.scores) {
         await supabase.from("conversation_scores").insert({
           user_id: user.id,
@@ -122,11 +113,9 @@ export default function ConversationPractice() {
       setScoringLoading(false);
     }
   }, [roundCount, bank, messages, roleInfo, user, navigate]);
-
   const categories = getScoreCategories(bank);
-
-  // Scoring overlay
-  if (showScoring) {
+  // Scoring overlay instructions
+  if(showScoring){
     return (
       <div className="min-h-screen flex flex-col max-w-md mx-auto items-center justify-center px-6 py-8">
         {scoringLoading ? (

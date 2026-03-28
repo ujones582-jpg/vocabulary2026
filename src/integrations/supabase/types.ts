@@ -45,7 +45,7 @@ export type Database = {
         Row: {
           bank: string
           correction: string
-          created_at: string
+          created_time: string
           id: string
           user_id: string
           user_sentence: string
@@ -54,7 +54,7 @@ export type Database = {
         Insert: {
           bank: string
           correction: string
-          created_at?: string
+          created_time?: string
           id?: string
           user_id: string
           user_sentence: string
@@ -63,7 +63,7 @@ export type Database = {
         Update: {
           bank?: string
           correction?: string
-          created_at?: string
+          created_time?: string
           id?: string
           user_id?: string
           user_sentence?: string

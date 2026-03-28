@@ -13,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 14%;
     --primary: 164 55% 45%;
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 0 0% 99%;
     --secondary: 220 14% 94%;
     --secondary-foreground: 220 20% 14%;
     --muted: 220 14% 94%;
@@ -38,7 +38,6 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
-
 @layer base {
   * {
     @apply border-border;
@@ -54,7 +53,6 @@
     text-wrap: pretty;
   }
 }
-
 @layer utilities {
   .card-shadow {
     box-shadow: 0 2px 12px 0 hsl(220 20% 14% / 0.06), 0 1px 3px 0 hsl(220 20% 14% / 0.04);

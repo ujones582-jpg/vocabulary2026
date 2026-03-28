@@ -4,16 +4,14 @@ import { ArrowLeft, Trash2, BookOpen, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-
 interface ErrorEntry {
   id: string;
   word: string;
   bank: string;
   user_sentence: string;
   correction: string;
-  created_at: string;
+  created_time: string;
 }
-
 export default function ErrorBank() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -27,7 +25,7 @@ export default function ErrorBank() {
       const { data, error } = await supabase
         .from("user_errors")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("created_time", { ascending: false });
 
       if (error) {
         console.error("Failed to fetch errors:", error);
