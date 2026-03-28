@@ -110,6 +110,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
     intermediate: "Upper Primary & Middle School",
     everyday: "Everyday Conversational",
     academic: "Advanced Academic",
+    native: "Native & University / Work",
   };
 
   const bankTags: Record<WordBank, string> = {
@@ -117,6 +118,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
     intermediate: "B1",
     everyday: "B2",
     academic: "C1",
+    native: "C2",
   };
 
   /* ── Handlers ── */
