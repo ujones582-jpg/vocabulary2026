@@ -122,6 +122,8 @@ export default function ConversationPractice() {
       });
       if (error) throw error;
       setScores(data?.scores || null);
+      setFeedback(data?.feedback || null);
+      setWordUsage(data?.wordUsage || null);
       if (user && data?.scores) {
         await supabase.from("conversation_scores").insert({
           user_id: user.id,
