@@ -83,6 +83,14 @@ export default function FlashcardStudy() {
               <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">{word.partOfSpeech}</span>
               <h2 className="font-display text-4xl text-foreground mb-3">{word.word}</h2>
               <p className="text-sm text-muted-foreground">Tap to see definition</p>
+              {getStatus(word.word) !== "mastered" && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleKnowIt(); }}
+                  className="mt-4 px-4 py-2 rounded-lg bg-accent text-accent-foreground text-xs font-semibold flex items-center gap-1.5 hover:bg-primary hover:text-primary-foreground transition-colors active:scale-95"
+                >
+                  <Zap className="w-3.5 h-3.5" /> Know it
+                </button>
+              )}
             </div>
             <div className="absolute inset-0 backface-hidden rotate-y-180 bg-primary rounded-xl flex flex-col items-center justify-center p-8 text-center">
               <span className="text-xs uppercase tracking-widest text-primary-foreground/50 font-medium mb-4">Definition</span>
