@@ -1698,6 +1698,13 @@ export function getScoreCategories(bank: WordBank): ScoreCategory[] {
         { key: "confidence", label: "Confidence", description: "Do you try to answer without fear?" },
         { key: "effort", label: "Effort", description: "Are you trying your best?" },
       ];
+    case "elementary":
+      return [
+        { key: "expression", label: "Expression", description: "Can you form simple sentences?" },
+        { key: "understanding", label: "Understanding", description: "Do you follow the conversation?" },
+        { key: "vocabulary_use", label: "Vocabulary Use", description: "Do you use new words correctly?" },
+        { key: "interaction", label: "Interaction", description: "Can you ask and answer questions?" },
+      ];
     case "everyday":
       return [
         { key: "naturalness", label: "Naturalness", description: "Do you sound like a native speaker?" },
