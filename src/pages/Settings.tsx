@@ -12,6 +12,7 @@ const banks: { id: WordBank; label: string; tag: string }[] = [
   { id: "intermediate", label: "Upper Primary & Middle School", tag: "B1" },
   { id: "everyday", label: "Everyday Conversational", tag: "B2" },
   { id: "academic", label: "Advanced Academic", tag: "C1" },
+  { id: "native", label: "Native & University / Work", tag: "C2" },
 ];
 
 export default function Settings() {

@@ -11,6 +11,7 @@ const banks = [
   { id: "intermediate" as WordBank, label: "Upper Primary & Middle School", desc: "Grades 4–8 · Reading · Science · Social Studies", tag: "B1" },
   { id: "everyday" as WordBank, label: "Everyday Conversational", desc: "Travel · Idioms · Phone calls", tag: "B2" },
   { id: "academic" as WordBank, label: "Advanced Academic", desc: "TOEFL · IELTS · SAT", tag: "C1" },
+  { id: "native" as WordBank, label: "Native & University / Work", desc: "Professional · Graduate-level · Nuanced expression", tag: "C2" },
 ];
 
 export default function WordBankSelection() {

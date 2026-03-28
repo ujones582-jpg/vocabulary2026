@@ -28,6 +28,7 @@ export default function LearnDashboard() {
     beginner: "Beginner EFL",
     everyday: "Everyday Conversational",
     intermediate: "Upper Primary & Middle School",
+    native: "Native & University / Work",
   };
 
   const seenPlus = counts.seen + counts.developing + counts.learnt + counts.mastered;
