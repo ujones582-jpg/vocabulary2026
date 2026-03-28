@@ -1637,6 +1637,7 @@ export function getWordBank(type: WordBank): VocabWord[] {
   switch (type) {
     case "academic": return [...academicWords, ...advancedSchoolWords];
     case "beginner": return beginnerWords;
+    case "elementary": return elementaryWords;
     case "everyday": return everydayWords;
     case "intermediate": return intermediateWords;
     case "native": return nativeWords;
