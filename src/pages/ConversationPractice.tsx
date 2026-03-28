@@ -29,7 +29,7 @@ export default function ConversationPractice() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-  // Start conversation with an AI opening message
+  // Start conversation with an AI opening message (AI Calls to Supabase Functions)
   const startConversation = useCallback(async () => {
     setIsLoading(true);
     try {
