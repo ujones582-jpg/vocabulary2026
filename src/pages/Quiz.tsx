@@ -1,9 +1,11 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, XCircle, ArrowRight, RotateCcw, MessageSquare, Keyboard, AlertTriangle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, ArrowRight, RotateCcw, MessageSquare, Keyboard } from "lucide-react";
 import type { WordBank, VocabWord } from "@/lib/vocabulary";
 import { getWordBank } from "@/lib/vocabulary";
 import { useWordStatus } from "@/hooks/useWordStatus";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import WordStatusPortal from "@/components/WordStatusPortal";
 
 interface MCQQuestion {
@@ -24,7 +26,9 @@ type QuizQuestion = MCQQuestion | SpellingQuestion;
 export default function Quiz() {
   const [searchParams] = useSearchParams();
   const bank = (searchParams.get("bank") || "academic") as WordBank;
+  const source = searchParams.get("source"); // "errors" or null
   const navigate = useNavigate();
+  const { user } = useAuth();
   const allWords = getWordBank(bank);
   const { getQuizWords, getStatus, counts, recordQuizAnswer, loading } = useWordStatus(bank);
 
@@ -32,7 +36,35 @@ export default function Quiz() {
   const [initialized, setInitialized] = useState(false);
   const [noWords, setNoWords] = useState(false);
 
-  if (!loading && !initialized) {
+  // Fetch error words if source=errors
+  useEffect(() => {
+    if (source !== "errors" || !user || initialized) return;
+    const fetchErrorWords = async () => {
+      const { data } = await supabase
+        .from("user_errors")
+        .select("word")
+        .eq("user_id", user.id);
+
+      if (!data || data.length === 0) {
+        setNoWords(true);
+        setInitialized(true);
+        return;
+      }
+
+      const errorWordNames = [...new Set(data.map(d => d.word))];
+      const matched = allWords.filter(w => errorWordNames.includes(w.word));
+      if (matched.length === 0) {
+        setNoWords(true);
+      } else {
+        setQuizWords(matched.sort(() => Math.random() - 0.5).slice(0, 10));
+      }
+      setInitialized(true);
+    };
+    fetchErrorWords();
+  }, [source, user, initialized, allWords]);
+
+  // Normal quiz init
+  if (!loading && !initialized && source !== "errors") {
     const words = getQuizWords(10);
     if (words.length === 0) setNoWords(true);
     else setQuizWords(words);
@@ -100,8 +132,12 @@ export default function Quiz() {
   }, [currentQ, questions.length]);
 
   const handleRetry = () => {
-    const words = getQuizWords(10);
-    setQuizWords(words);
+    if (source === "errors") {
+      setInitialized(false);
+    } else {
+      const words = getQuizWords(10);
+      setQuizWords(words);
+    }
     setCurrentQ(0);
     setMcqSelected(null);
     setSpellingInput("");
@@ -117,6 +153,8 @@ export default function Quiz() {
 
   const portalWords = quizWords.map((w) => ({ word: w.word, status: getStatus(w.word) }));
 
+  const quizLabel = source === "errors" ? "Mistake Practice" : "Quiz";
+
   if (noWords) {
     return (
       <div className="min-h-screen flex flex-col max-w-md mx-auto">
@@ -124,17 +162,20 @@ export default function Quiz() {
           <button onClick={() => navigate(`/learn?bank=${bank}`)} className="p-1.5 rounded hover:bg-muted transition-colors active:scale-95">
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
-          <p className="text-sm font-semibold text-foreground">Quiz</p>
+          <p className="text-sm font-semibold text-foreground">{quizLabel}</p>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center">
-          <AlertTriangle className="w-10 h-10 text-warm mb-4" />
-          <h2 className="font-display text-xl text-foreground mb-2">No words to quiz yet</h2>
-          <p className="text-sm text-muted-foreground mb-6">Study flashcards first so words become "Seen".</p>
+          <h2 className="font-display text-xl text-foreground mb-2">
+            {source === "errors" ? "No mistake words found" : "No words to quiz yet"}
+          </h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            {source === "errors" ? "Your error bank is empty." : "Study flashcards first so words become \"Seen\"."}
+          </p>
           <button
-            onClick={() => navigate(`/flashcards?bank=${bank}`)}
+            onClick={() => navigate(source === "errors" ? `/learn?bank=${bank}` : `/flashcards?bank=${bank}`)}
             className="py-3 px-8 rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-all active:scale-[0.97]"
           >
-            Study flashcards
+            {source === "errors" ? "Back to dashboard" : "Study flashcards"}
           </button>
         </div>
       </div>
@@ -206,7 +247,7 @@ export default function Quiz() {
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
         <div className="flex-1">
-          <p className="text-sm font-semibold text-foreground">Quiz</p>
+          <p className="text-sm font-semibold text-foreground">{quizLabel}</p>
           <p className="text-xs text-muted-foreground">{currentQ + 1} / {questions.length}</p>
         </div>
         <div className="flex gap-1.5">
