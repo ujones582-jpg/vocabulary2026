@@ -1,13 +1,17 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ArrowRight, RotateCcw, CheckCircle2 } from "lucide-react";
 import type { WordBank } from "@/lib/vocabulary";
 import { getRandomWords } from "@/lib/vocabulary";
+import { useWordStatus } from "@/hooks/useWordStatus";
+import WordStatusPortal from "@/components/WordStatusPortal";
 
 export default function FlashcardStudy() {
   const [searchParams] = useSearchParams();
   const bank = (searchParams.get("bank") || "academic") as WordBank;
   const navigate = useNavigate();
+
+  const { markSeen, getStatus, counts, statuses, loading } = useWordStatus(bank);
 
   const [words, setWords] = useState(() => getRandomWords(bank, 10));
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -17,21 +21,28 @@ export default function FlashcardStudy() {
   const word = words[currentIndex];
   const isLast = currentIndex === words.length - 1;
 
+  // Mark word as seen when user views it
+  useEffect(() => {
+    if (word && !loading) {
+      markSeen(word.word);
+    }
+  }, [currentIndex, word, loading, markSeen]);
+
   const handleNext = useCallback(() => {
-    setStudied(prev => new Set(prev).add(currentIndex));
+    setStudied((prev) => new Set(prev).add(currentIndex));
     setFlipped(false);
     if (currentIndex < words.length - 1) {
-      setCurrentIndex(i => i + 1);
+      setCurrentIndex((i) => i + 1);
     }
   }, [currentIndex, words.length]);
 
   const handlePrev = useCallback(() => {
     setFlipped(false);
-    if (currentIndex > 0) setCurrentIndex(i => i - 1);
+    if (currentIndex > 0) setCurrentIndex((i) => i - 1);
   }, [currentIndex]);
 
   const handleFinish = () => {
-    setStudied(prev => new Set(prev).add(currentIndex));
+    setStudied((prev) => new Set(prev).add(currentIndex));
     navigate(`/quiz?bank=${bank}`);
   };
 
@@ -41,6 +52,12 @@ export default function FlashcardStudy() {
     setCurrentIndex(0);
     setStudied(new Set());
   };
+
+  // Build word list for portal from all bank words
+  const allWordStatuses = words.map((w) => ({
+    word: w.word,
+    status: getStatus(w.word),
+  }));
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto">
@@ -53,7 +70,7 @@ export default function FlashcardStudy() {
           <p className="text-xs text-muted-foreground">{currentIndex + 1} / {words.length} words</p>
         </div>
         <div className="text-xs font-medium text-primary bg-accent px-2.5 py-1 rounded-md">
-          {studied.size} learned
+          {studied.size} studied
         </div>
       </div>
 
@@ -106,6 +123,8 @@ export default function FlashcardStudy() {
           <RotateCcw className="w-3.5 h-3.5" /> New random set
         </button>
       </div>
+
+      <WordStatusPortal counts={counts} words={allWordStatuses} />
     </div>
   );
 }
