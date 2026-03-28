@@ -1,4 +1,4 @@
-export type WordBank = "academic" | "beginner" | "everyday" | "intermediate" | "native";
+export type WordBank = "academic" | "beginner" | "elementary" | "everyday" | "intermediate" | "native";
 export type RoleType = "examiner" | "teacher" | "local" | "tutor";
 
 export interface VocabWord {
