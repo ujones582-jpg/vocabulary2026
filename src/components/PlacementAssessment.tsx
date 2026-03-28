@@ -7,7 +7,8 @@ import type { WordBank } from "@/lib/vocabulary";
 const standardizedTests = [
   { id: "toefl", label: "TOEFL", min: 0, max: 120, placeholder: "0–120",
     thresholds: [
-      { cutoff: 40, bank: "beginner" as WordBank },
+      { cutoff: 30, bank: "beginner" as WordBank },
+      { cutoff: 40, bank: "elementary" as WordBank },
       { cutoff: 61, bank: "intermediate" as WordBank },
       { cutoff: 91, bank: "everyday" as WordBank },
       { cutoff: 106, bank: "academic" as WordBank },
@@ -15,7 +16,8 @@ const standardizedTests = [
     ]},
   { id: "ielts", label: "IELTS", min: 0, max: 9, placeholder: "0–9", step: 0.5,
     thresholds: [
-      { cutoff: 4, bank: "beginner" as WordBank },
+      { cutoff: 3, bank: "beginner" as WordBank },
+      { cutoff: 4, bank: "elementary" as WordBank },
       { cutoff: 6, bank: "intermediate" as WordBank },
       { cutoff: 7.5, bank: "everyday" as WordBank },
       { cutoff: 8.5, bank: "academic" as WordBank },
@@ -23,7 +25,8 @@ const standardizedTests = [
     ]},
   { id: "sat", label: "SAT (Reading & Writing)", min: 200, max: 800, placeholder: "200–800",
     thresholds: [
-      { cutoff: 400, bank: "beginner" as WordBank },
+      { cutoff: 350, bank: "beginner" as WordBank },
+      { cutoff: 400, bank: "elementary" as WordBank },
       { cutoff: 530, bank: "intermediate" as WordBank },
       { cutoff: 650, bank: "everyday" as WordBank },
       { cutoff: 730, bank: "academic" as WordBank },
