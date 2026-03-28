@@ -15,7 +15,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { type, bank, role, word, userInput, conversationHistory, categories, conversationLog, roundCount, history } = await req.json();
+    const { type, bank, role, word, userInput, conversationHistory, categories, conversationLog, roundCount, history, topicType, topicPrompt, topicLabel } = await req.json();
 
     let systemPrompt = "";
     let messages: { role: string; content: string }[] = [];
