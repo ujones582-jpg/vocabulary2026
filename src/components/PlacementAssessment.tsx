@@ -371,7 +371,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
               onClick={nextVocabQuestion}
               className="w-full py-3.5 rounded-lg font-semibold text-sm bg-primary text-primary-foreground transition-all active:scale-[0.97] flex items-center justify-center gap-2"
             >
-              {vocabIdx < vocabQuizWords.length - 1 ? "Next Question" : "See My Result"}
+              {vocabIdx < quizQuestions.length - 1 ? "Next Question" : "See My Result"}
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
