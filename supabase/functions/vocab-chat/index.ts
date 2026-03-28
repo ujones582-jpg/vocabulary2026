@@ -189,6 +189,13 @@ Imagine you're a native friend rating how enjoyable this conversation was.`,
 - fluency: Does the writing flow? Is diction effective?
 - coherence: Are ideas logically connected and well-structured?
 Score strictly as an IELTS examiner would.`,
+
+        native: `This student is at near-native proficiency. Score based on:
+- precision: Do they choose the exact right word for the context?
+- sophistication: Is their language nuanced, layered, and idiomatic?
+- rhetoric: Can they persuade, argue, and structure ideas compellingly?
+- register: Do they adapt tone and formality appropriately to context?
+Score as a university professor or senior editor would — expect near-native precision.`,
       };
 
       systemPrompt = `You are an English language assessor. Score this student's conversation performance AND provide detailed feedback.
