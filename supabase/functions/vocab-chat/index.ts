@@ -269,9 +269,13 @@ Respond in this exact JSON format and nothing else:
       try {
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
-        result = { scores: parsed.scores || parsed };
+        result = {
+          scores: parsed.scores || {},
+          feedback: parsed.feedback || null,
+          wordUsage: parsed.wordUsage || null,
+        };
       } catch {
-        result = { scores: {} };
+        result = { scores: {}, feedback: null, wordUsage: null };
       }
     } else if (type === "define_word") {
       try {
