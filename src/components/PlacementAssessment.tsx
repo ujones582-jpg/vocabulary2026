@@ -44,6 +44,13 @@ const vocabPool: VocabQuestion[] = [
   { word: "help", definition: "to make it easier for someone to do something", level: "beginner", fakeDefinitions: ["to break apart", "a loud sound", "a kind of plant"] },
   { word: "bright", definition: "giving out or reflecting a lot of light", level: "beginner", fakeDefinitions: ["very heavy", "extremely slow", "a type of animal"] },
 
+  // ── Elementary ──
+  { word: "luggage", definition: "bags and suitcases you take when travelling", level: "elementary", fakeDefinitions: ["a type of lunch", "a musical instrument", "a small animal"] },
+  { word: "recipe", definition: "instructions for cooking a particular dish", level: "elementary", fakeDefinitions: ["a receipt from a shop", "a type of medicine", "a school report"] },
+  { word: "comfortable", definition: "making you feel relaxed and at ease", level: "elementary", fakeDefinitions: ["very expensive", "related to computers", "extremely difficult"] },
+  { word: "improve", definition: "to get better at something", level: "elementary", fakeDefinitions: ["to move to a new place", "to prove something wrong", "to make something smaller"] },
+  { word: "appointment", definition: "an arrangement to meet someone at a fixed time", level: "elementary", fakeDefinitions: ["a type of apartment", "a disappointing event", "a point on a map"] },
+
   // ── Intermediate ──
   { word: "community", definition: "a group of people living in the same area or sharing interests", level: "intermediate", fakeDefinitions: ["a type of building", "a loud noise", "an old tradition"] },
   { word: "generous", definition: "willing to give more than is expected", level: "intermediate", fakeDefinitions: ["very dangerous", "related to science", "extremely tired"] },
