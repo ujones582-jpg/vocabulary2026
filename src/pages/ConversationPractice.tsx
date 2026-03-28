@@ -29,6 +29,8 @@ export default function ConversationPractice() {
   const [roundCount, setRoundCount] = useState(0);
   const [showScoring, setShowScoring] = useState(false);
   const [scores, setScores] = useState<Record<string, number> | null>(null);
+  const [feedback, setFeedback] = useState<{ strengths: string[]; improvements: string[]; summary: string } | null>(null);
+  const [wordUsage, setWordUsage] = useState<{ impressiveWords: string[]; wordsToTry: string[] } | null>(null);
   const [scoringLoading, setScoringLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
