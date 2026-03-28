@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { WordBank, VocabWord } from "@/lib/vocabulary";
 import { getWordBank } from "@/lib/vocabulary";
 
-export type WordStatusLevel = "unseen" | "seen" | "learnt" | "mastered";
+export type WordStatusLevel = "unseen" | "seen" | "developing" | "learnt" | "mastered";
 
 export interface WordStatusRecord {
   word: string;
@@ -60,7 +60,7 @@ export function useWordStatus(bank: WordBank) {
     async (word: string) => {
       if (!user) return;
       const current = statuses.get(word);
-      if (current && current.status !== "unseen") return; // already seen+
+      if (current && current.status !== "unseen") return;
 
       await supabase.from("word_status").upsert(
         {
@@ -110,26 +110,32 @@ export function useWordStatus(bank: WordBank) {
         if (questionType === "mcq") mcq++;
         else spelling++;
       } else {
-        // Wrong answer: reset streaks, demote if learnt
-        if (questionType === "mcq") mcq = 0;
-        else spelling = 0;
+        if (questionType === "mcq") mcq = Math.max(0, mcq - 1);
+        else spelling = Math.max(0, spelling - 1);
       }
 
       // Determine new status
       let newStatus: WordStatusLevel = current.status;
 
-      if (!correct && (current.status === "learnt")) {
-        // Demote back to seen
-        newStatus = "seen";
-        mcq = 0;
-        spelling = 0;
-      } else if (current.status === "seen" || current.status === "learnt") {
-        // Check for learnt: 2 MCQ correct + 2 spelling correct
-        if (mcq >= 2 && spelling >= 2 && current.status === "seen") {
+      if (!correct) {
+        // Demote: mastered → learnt, learnt → developing
+        if (current.status === "mastered") {
+          newStatus = "learnt";
+        } else if (current.status === "learnt") {
+          newStatus = "developing";
+        }
+      } else {
+        // Promote logic (cumulative)
+        // seen → developing: at least 1 correct answer
+        if (current.status === "seen") {
+          newStatus = "developing";
+        }
+        // developing → learnt: 2 MCQ + 2 spelling cumulative
+        if ((current.status === "developing" || newStatus === "developing") && mcq >= 2 && spelling >= 2) {
           newStatus = "learnt";
         }
-        // Check for mastered: 4 MCQ correct OR ai chat used
-        if ((mcq >= 4 || current.ai_chat_used) && (current.status === "learnt" || newStatus === "learnt")) {
+        // learnt → mastered: 3 MCQ total OR ai chat used
+        if ((current.status === "learnt" || newStatus === "learnt") && (mcq >= 3 || current.ai_chat_used)) {
           newStatus = "mastered";
         }
       }
@@ -174,7 +180,7 @@ export function useWordStatus(bank: WordBank) {
         updated_at: new Date().toISOString(),
       };
 
-      // AI chat used alone is enough for mastery (OR condition)
+      // AI chat used alone is enough for mastery (if learnt)
       if (current.status === "learnt") {
         update.status = "mastered";
       }
@@ -208,26 +214,28 @@ export function useWordStatus(bank: WordBank) {
     [allWords, getStatus]
   );
 
-  // Get quizzable words (seen + learnt + mastered, with gradual learnt/mastered inclusion)
+  // Get quizzable words (seen + developing + learnt + mastered, with gradual inclusion)
   const getQuizWords = useCallback(
     (count: number): VocabWord[] => {
       const seenWords = getWordsByStatus("seen");
+      const developingWords = getWordsByStatus("developing");
       const learntWords = getWordsByStatus("learnt");
       const masteredWords = getWordsByStatus("mastered");
 
-      const allQuizzable = [...seenWords];
+      // Seen and developing are always quizzable
+      const allQuizzable = [...seenWords, ...developingWords];
 
       // After 5 learnt words, start including them
       if (learntWords.length >= 5) {
-        // Include a proportion: roughly learntWords.length / totalSeen ratio, min 1
-        const learntCount = Math.max(1, Math.floor(count * (learntWords.length / (seenWords.length + learntWords.length + masteredWords.length))));
+        const total = seenWords.length + developingWords.length + learntWords.length + masteredWords.length;
+        const learntCount = Math.max(1, Math.floor(count * (learntWords.length / total)));
         const shuffledLearnt = [...learntWords].sort(() => Math.random() - 0.5);
         allQuizzable.push(...shuffledLearnt.slice(0, learntCount));
       }
 
       // After 5 mastered words, start including them sporadically
       if (masteredWords.length >= 5) {
-        const masteredCount = Math.max(1, Math.floor(count * 0.1)); // 10% mastered
+        const masteredCount = Math.max(1, Math.floor(count * 0.1));
         const shuffledMastered = [...masteredWords].sort(() => Math.random() - 0.5);
         allQuizzable.push(...shuffledMastered.slice(0, masteredCount));
       }
@@ -244,6 +252,7 @@ export function useWordStatus(bank: WordBank) {
   const counts = {
     unseen: getWordsByStatus("unseen").length,
     seen: getWordsByStatus("seen").length,
+    developing: getWordsByStatus("developing").length,
     learnt: getWordsByStatus("learnt").length,
     mastered: getWordsByStatus("mastered").length,
   };
