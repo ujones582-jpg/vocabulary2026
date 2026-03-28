@@ -7,7 +7,7 @@ import { useUserPreference } from "@/hooks/useUserPreference";
 
 const banks = [
   { id: "beginner" as WordBank, icon: Sprout, label: "Beginner EFL", desc: "Start from zero — no English needed!", emoji: "🌱" },
-  { id: "intermediate" as WordBank, icon: BookOpen, label: "Intermediate School", desc: "Essays · Science · History · Debate", emoji: "📚" },
+  { id: "intermediate" as WordBank, icon: BookOpen, label: "Upper Primary & Middle School", desc: "Grades 4–8 · Reading · Science · Social Studies", emoji: "📚" },
   { id: "everyday" as WordBank, icon: Plane, label: "Everyday Conversational", desc: "Travel · Idioms · Phone calls", emoji: "✈️" },
   { id: "academic" as WordBank, icon: GraduationCap, label: "Advanced Academic", desc: "TOEFL · IELTS · SAT", emoji: "🎓" },
 ];

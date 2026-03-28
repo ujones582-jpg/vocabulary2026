@@ -23,7 +23,7 @@ export default function LearnDashboard() {
     academic: "🎓 Advanced Academic",
     beginner: "🌱 Beginner EFL",
     everyday: "✈️ Everyday Conversational",
-    intermediate: "📚 Intermediate School",
+    intermediate: "📚 Upper Primary & Middle School",
   };
 
   const seenPlus = counts.seen + counts.learnt + counts.mastered;
