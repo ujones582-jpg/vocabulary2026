@@ -20,6 +20,7 @@ interface SpellingQuestion {
   definition: string;
   partOfSpeech: string;
   answer: string;
+  example?: string;
 }
 
 type QuizQuestion = MCQQuestion | SpellingQuestion;
