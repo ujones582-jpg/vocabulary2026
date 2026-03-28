@@ -1612,6 +1612,23 @@ const nativeWords: VocabWord[] = [
   { word: "tergiversation", definition: "the making of evasive statements; equivocation", partOfSpeech: "noun", example: "The politician's tergiversation on the issue frustrated voters." },
   { word: "velleity", definition: "a wish or inclination not strong enough to lead to action", partOfSpeech: "noun", example: "His desire to learn the piano never progressed beyond a velleity." },
   { word: "zeitgeist", definition: "the defining spirit or mood of a particular period of history", partOfSpeech: "noun", example: "The film perfectly captured the zeitgeist of the 1990s." },
+  // Set 21
+  { word: "palaver", definition: "prolonged and idle discussion; unnecessary fuss", partOfSpeech: "noun", example: "After much palaver, the committee finally reached a decision." },
+  { word: "recondite", definition: "little known or difficult to understand", partOfSpeech: "adjective", example: "The paper explored recondite aspects of quantum field theory." },
+  { word: "oblique", definition: "not explicit or direct in addressing a point; slanting", partOfSpeech: "adjective", example: "She made an oblique reference to his earlier failure." },
+  { word: "tendentious", definition: "expressing a particular cause or point of view", partOfSpeech: "adjective", example: "The tendentious article was criticized for its bias." },
+  { word: "munificent", definition: "larger or more generous than is usual or necessary", partOfSpeech: "adjective", example: "The munificent donation funded the entire research wing." },
+  { word: "plangent", definition: "loud, mournful, and reverberating", partOfSpeech: "adjective", example: "The plangent cry of the seagulls echoed over the harbor." },
+  { word: "anodize", definition: "to coat a metal with a protective oxide layer", partOfSpeech: "verb", example: "The aluminum parts were anodized to resist corrosion." },
+  { word: "heuristic", definition: "enabling a person to discover or learn something for themselves", partOfSpeech: "adjective", example: "The teacher used heuristic methods to encourage independent thinking." },
+  { word: "veridical", definition: "truthful; corresponding to facts", partOfSpeech: "adjective", example: "The witness gave a veridical account of the events." },
+  { word: "penumbra", definition: "the partially shaded outer region of a shadow; an area of uncertainty", partOfSpeech: "noun", example: "The ruling exists in the penumbra of constitutional interpretation." },
+  { word: "casuistry", definition: "the use of clever but unsound reasoning, especially in relation to moral questions", partOfSpeech: "noun", example: "His defense was dismissed as mere casuistry by the ethics board." },
+  { word: "apposite", definition: "apt in the circumstances or in relation to something", partOfSpeech: "adjective", example: "Her apposite remarks drew applause from the audience." },
+  { word: "concatenate", definition: "to link things together in a chain or series", partOfSpeech: "verb", example: "The programmer concatenated the strings to form the output." },
+  { word: "recidivist", definition: "a convicted criminal who reoffends", partOfSpeech: "noun", example: "The high recidivist rate suggests the rehabilitation program is failing." },
+  { word: "metonymy", definition: "the substitution of the name of an attribute for that of the thing meant", partOfSpeech: "noun", example: "'The pen is mightier than the sword' is an example of metonymy." },
+  { word: "indefeasible", definition: "not able to be annulled or made void", partOfSpeech: "adjective", example: "Citizens have an indefeasible right to due process under the law." },
 ];
 
 
