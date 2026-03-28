@@ -1,10 +1,10 @@
 import { useState, useMemo, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, XCircle, ArrowRight, RotateCcw, MessageSquare, Keyboard } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, ArrowRight, RotateCcw, MessageSquare, Keyboard, AlertTriangle } from "lucide-react";
 import type { WordBank, VocabWord } from "@/lib/vocabulary";
-import { getRandomWords, getWordBank } from "@/lib/vocabulary";
-
-type QuestionType = "mcq" | "spelling";
+import { getWordBank } from "@/lib/vocabulary";
+import { useWordStatus } from "@/hooks/useWordStatus";
+import WordStatusPortal from "@/components/WordStatusPortal";
 
 interface MCQQuestion {
   type: "mcq";
@@ -26,14 +26,28 @@ export default function Quiz() {
   const bank = (searchParams.get("bank") || "academic") as WordBank;
   const navigate = useNavigate();
   const allWords = getWordBank(bank);
+  const { getQuizWords, getStatus, counts, recordQuizAnswer, loading } = useWordStatus(bank);
 
-  const [quizWords] = useState(() => getRandomWords(bank, 10));
+  const [quizWords, setQuizWords] = useState<VocabWord[]>([]);
+  const [initialized, setInitialized] = useState(false);
+  const [noWords, setNoWords] = useState(false);
+
+  // Initialize quiz words once loading finishes
+  if (!loading && !initialized) {
+    const words = getQuizWords(10);
+    if (words.length === 0) {
+      setNoWords(true);
+    } else {
+      setQuizWords(words);
+    }
+    setInitialized(true);
+  }
 
   const questions = useMemo<QuizQuestion[]>(() => {
+    if (quizWords.length === 0) return [];
     return quizWords.map((w, idx) => {
-      // Alternate: even index = MCQ, odd = spelling
       if (idx % 2 === 0) {
-        const wrongWords = allWords.filter(aw => aw.word !== w.word);
+        const wrongWords = allWords.filter((aw) => aw.word !== w.word);
         const shuffled = [...wrongWords].sort(() => Math.random() - 0.5).slice(0, 3);
         const options = [
           { id: 0, definition: w.definition, isCorrect: true },
@@ -49,54 +63,111 @@ export default function Quiz() {
   const [currentQ, setCurrentQ] = useState(0);
   const [mcqSelected, setMcqSelected] = useState<number | null>(null);
   const [spellingInput, setSpellingInput] = useState("");
-  const [results, setResults] = useState<(boolean | null)[]>(new Array(10).fill(null));
+  const [results, setResults] = useState<(boolean | null)[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [finished, setFinished] = useState(false);
 
+  // Init results array when questions change
+  if (questions.length > 0 && results.length === 0) {
+    setResults(new Array(questions.length).fill(null));
+  }
+
   const question = questions[currentQ];
-  const correctCount = results.filter(r => r === true).length;
-  const incorrectCount = results.filter(r => r === false).length;
+  const correctCount = results.filter((r) => r === true).length;
+  const incorrectCount = results.filter((r) => r === false).length;
 
-  const handleMCQSelect = useCallback((idx: number) => {
-    if (showResult || question.type !== "mcq") return;
-    setMcqSelected(idx);
-    const isCorrect = question.options[idx].isCorrect;
-    setResults(prev => { const n = [...prev]; n[currentQ] = isCorrect; return n; });
-    setShowResult(true);
-  }, [showResult, question, currentQ]);
+  const handleMCQSelect = useCallback(
+    async (idx: number) => {
+      if (showResult || !question || question.type !== "mcq") return;
+      setMcqSelected(idx);
+      const isCorrect = question.options[idx].isCorrect;
+      setResults((prev) => {
+        const n = [...prev];
+        n[currentQ] = isCorrect;
+        return n;
+      });
+      setShowResult(true);
+      await recordQuizAnswer(question.word, "mcq", isCorrect);
+    },
+    [showResult, question, currentQ, recordQuizAnswer]
+  );
 
-  const handleSpellingSubmit = useCallback(() => {
-    if (showResult || question.type !== "spelling") return;
+  const handleSpellingSubmit = useCallback(async () => {
+    if (showResult || !question || question.type !== "spelling") return;
     const isCorrect = spellingInput.trim().toLowerCase() === question.answer.toLowerCase();
-    setResults(prev => { const n = [...prev]; n[currentQ] = isCorrect; return n; });
+    setResults((prev) => {
+      const n = [...prev];
+      n[currentQ] = isCorrect;
+      return n;
+    });
     setShowResult(true);
-  }, [showResult, question, currentQ, spellingInput]);
+    await recordQuizAnswer(question.answer, "spelling", isCorrect);
+  }, [showResult, question, currentQ, spellingInput, recordQuizAnswer]);
 
   const handleNext = useCallback(() => {
     setMcqSelected(null);
     setSpellingInput("");
     setShowResult(false);
     if (currentQ < questions.length - 1) {
-      setCurrentQ(i => i + 1);
+      setCurrentQ((i) => i + 1);
     } else {
       setFinished(true);
     }
   }, [currentQ, questions.length]);
 
   const handleRetry = () => {
+    const words = getQuizWords(10);
+    setQuizWords(words);
     setCurrentQ(0);
     setMcqSelected(null);
     setSpellingInput("");
     setShowResult(false);
     setFinished(false);
-    setResults(new Array(10).fill(null));
+    setResults([]);
   };
 
-  // Get wrong words for results screen
   const weakWords = questions
     .map((q, i) => ({ q, correct: results[i] }))
-    .filter(x => x.correct === false)
-    .map(x => x.q.type === "mcq" ? x.q.word : x.q.answer);
+    .filter((x) => x.correct === false)
+    .map((x) => (x.q.type === "mcq" ? x.q.word : x.q.answer));
+
+  // Build portal word list from quiz words
+  const portalWords = quizWords.map((w) => ({ word: w.word, status: getStatus(w.word) }));
+
+  // No words available screen
+  if (noWords) {
+    return (
+      <div className="min-h-screen flex flex-col max-w-md mx-auto">
+        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md px-4 py-3 flex items-center gap-3 border-b border-border">
+          <button onClick={() => navigate(`/learn?bank=${bank}`)} className="p-1.5 rounded-md hover:bg-muted transition-colors active:scale-95">
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </button>
+          <p className="text-sm font-semibold text-foreground">Quiz</p>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center">
+          <AlertTriangle className="w-12 h-12 text-amber-500 mb-4" />
+          <h2 className="text-xl font-bold text-foreground mb-2">No words to quiz yet!</h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            You need to study flashcards first so words become "Seen" before you can be quizzed on them.
+          </p>
+          <button
+            onClick={() => navigate(`/flashcards?bank=${bank}`)}
+            className="py-3.5 px-8 rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-all active:scale-[0.97]"
+          >
+            Study Flashcards First
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading || !initialized || questions.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (finished) {
     const score = Math.round((correctCount / questions.length) * 100);
@@ -123,7 +194,7 @@ export default function Quiz() {
             <div className="w-full bg-card rounded-lg p-4 card-shadow mb-6">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Words to review</p>
               <div className="flex flex-wrap gap-2">
-                {weakWords.map(w => (
+                {weakWords.map((w) => (
                   <span key={w} className="text-sm bg-destructive/10 text-destructive px-2.5 py-1 rounded-md font-medium">{w}</span>
                 ))}
               </div>
@@ -131,11 +202,9 @@ export default function Quiz() {
           )}
 
           <div className="w-full space-y-3">
-            {weakWords.length > 0 && (
-              <button onClick={() => navigate(`/flashcards?bank=${bank}`)} className="w-full py-3.5 rounded-lg bg-card text-foreground text-sm font-medium card-shadow transition-all active:scale-[0.97] flex items-center justify-center gap-2">
-                <RotateCcw className="w-4 h-4" /> Re-study words
-              </button>
-            )}
+            <button onClick={() => navigate(`/flashcards?bank=${bank}`)} className="w-full py-3.5 rounded-lg bg-card text-foreground text-sm font-medium card-shadow transition-all active:scale-[0.97] flex items-center justify-center gap-2">
+              <RotateCcw className="w-4 h-4" /> Continue Studying
+            </button>
             {passed && (
               <button onClick={() => navigate(`/practice?bank=${bank}`)} className="w-full py-3.5 rounded-lg bg-accent text-foreground text-sm font-medium card-shadow transition-all active:scale-[0.97] flex items-center justify-center gap-2">
                 <MessageSquare className="w-4 h-4" /> Try Conversation Practice
@@ -149,6 +218,7 @@ export default function Quiz() {
             </button>
           </div>
         </div>
+        <WordStatusPortal counts={counts} words={portalWords} />
       </div>
     );
   }
@@ -224,8 +294,10 @@ export default function Quiz() {
               <input
                 type="text"
                 value={spellingInput}
-                onChange={e => setSpellingInput(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter" && spellingInput.trim()) handleSpellingSubmit(); }}
+                onChange={(e) => setSpellingInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && spellingInput.trim()) handleSpellingSubmit();
+                }}
                 disabled={showResult}
                 placeholder="Type the word…"
                 className={`w-full text-center text-2xl font-bold py-4 px-6 rounded-xl border-2 bg-card outline-none transition-all ${
@@ -270,6 +342,8 @@ export default function Quiz() {
           </button>
         )}
       </div>
+
+      <WordStatusPortal counts={counts} words={portalWords} />
     </div>
   );
 }
