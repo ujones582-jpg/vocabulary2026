@@ -15,7 +15,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { type, bank, role, word, userInput, conversationHistory, categories, conversationLog, roundCount, history } = await req.json();
+    const { type, bank, role, word, userInput, conversationHistory, categories, conversationLog, roundCount, history, topicType, topicPrompt, topicLabel } = await req.json();
 
     let systemPrompt = "";
     let messages: { role: string; content: string }[] = [];
@@ -45,6 +45,14 @@ Be articulate but not pretentious. Engage genuinely with ideas.`,
       };
 
       systemPrompt = bankPersona[bank] || bankPersona.academic;
+
+      // Add topic/scenario context
+      if (topicPrompt && topicType === "scenario") {
+        systemPrompt += `\n\nIMPORTANT SCENARIO: ${topicPrompt}\nStay in this role-play scenario throughout the conversation. Start by setting the scene naturally.`;
+      } else if (topicPrompt && topicType === "topic") {
+        systemPrompt += `\n\nFocus the conversation on this topic: ${topicPrompt}\nStart by bringing up this topic naturally in your opening.`;
+      }
+
       messages = [
         { role: "system", content: systemPrompt + "\n\nGenerate ONLY your opening message. Keep it natural and concise (2-4 sentences max)." },
         { role: "user", content: "Start the conversation." },
@@ -97,6 +105,13 @@ Rules:
       };
 
       systemPrompt = bankBehavior[bank] || bankBehavior.academic;
+
+      // Add topic/scenario context
+      if (topicPrompt && topicType === "scenario") {
+        systemPrompt += `\n\nYou are in this ROLE-PLAY SCENARIO: ${topicPrompt}\nStay in character throughout. Don't break the scenario.`;
+      } else if (topicPrompt && topicType === "topic") {
+        systemPrompt += `\n\nKeep the conversation focused on: ${topicPrompt}\nYou can naturally branch within this topic but don't drift to unrelated subjects.`;
+      }
       
       // Build messages from conversation history
       messages = [
