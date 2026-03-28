@@ -102,6 +102,16 @@ export default function ConversationPractice() {
 
   const handleLeaveAndScore = useCallback(async () => {
     if (roundCount < 2) {
+      // Still save the conversation even if too short to score
+      if (user && messages.length > 0) {
+        await supabase.from("conversation_history").insert({
+          user_id: user.id,
+          bank,
+          role_label: roleInfo.label,
+          messages: messages.map(m => ({ role: m.role, content: m.content })),
+          rounds_completed: roundCount,
+        });
+      }
       navigate(`/learn?bank=${bank}`);
       return;
     }
