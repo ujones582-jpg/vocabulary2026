@@ -9,10 +9,10 @@ interface Props {
 
 const statusConfig: Record<WordStatusLevel, { icon: React.ElementType; label: string; colorClass: string; bgClass: string }> = {
   unseen: { icon: EyeOff, label: "Unseen", colorClass: "text-muted-foreground", bgClass: "bg-muted" },
-  seen: { icon: Eye, label: "Seen", colorClass: "text-amber-600 dark:text-amber-400", bgClass: "bg-amber-500/10" },
-  developing: { icon: RefreshCw, label: "Growing", colorClass: "text-orange-600 dark:text-orange-400", bgClass: "bg-orange-500/10" },
-  learnt: { icon: BookCheck, label: "Learnt", colorClass: "text-blue-600 dark:text-blue-400", bgClass: "bg-blue-500/10" },
-  mastered: { icon: Crown, label: "Mastered", colorClass: "text-emerald-600 dark:text-emerald-400", bgClass: "bg-emerald-500/10" },
+  seen: { icon: Eye, label: "Seen", colorClass: "text-amber-700", bgClass: "bg-amber-500/8" },
+  developing: { icon: RefreshCw, label: "Growing", colorClass: "text-orange-700", bgClass: "bg-orange-500/8" },
+  learnt: { icon: BookCheck, label: "Learnt", colorClass: "text-blue-700", bgClass: "bg-blue-500/8" },
+  mastered: { icon: Crown, label: "Mastered", colorClass: "text-emerald-700", bgClass: "bg-emerald-500/8" },
 };
 
 export default function WordStatusPortal({ counts, words }: Props) {
@@ -23,7 +23,6 @@ export default function WordStatusPortal({ counts, words }: Props) {
 
   return (
     <>
-      {/* Toggle button - fixed on right side */}
       <button
         onClick={() => setOpen(!open)}
         className="fixed right-0 top-1/2 -translate-y-1/2 z-30 bg-card border border-border rounded-l-lg px-1.5 py-4 card-shadow hover:bg-muted transition-colors"
@@ -31,15 +30,13 @@ export default function WordStatusPortal({ counts, words }: Props) {
         {open ? <ChevronRight className="w-4 h-4 text-foreground" /> : <ChevronLeft className="w-4 h-4 text-foreground" />}
       </button>
 
-      {/* Slide-out panel */}
       <div
         className={`fixed right-0 top-0 h-full w-72 bg-card border-l border-border z-20 transform transition-transform duration-300 ${
           open ? "translate-x-0" : "translate-x-full"
         } flex flex-col`}
       >
         <div className="p-4 border-b border-border">
-          <h3 className="text-sm font-bold text-foreground mb-3">Word Progress</h3>
-          {/* Stats row */}
+          <h3 className="font-display text-base text-foreground mb-3">Word Progress</h3>
           <div className="grid grid-cols-5 gap-1">
             {(["unseen", "seen", "developing", "learnt", "mastered"] as WordStatusLevel[]).map((s) => {
               const cfg = statusConfig[s];
@@ -61,7 +58,6 @@ export default function WordStatusPortal({ counts, words }: Props) {
           </div>
         </div>
 
-        {/* Word list */}
         <div className="flex-1 overflow-y-auto p-3 space-y-1">
           {filtered.map((w) => {
             const cfg = statusConfig[w.status];

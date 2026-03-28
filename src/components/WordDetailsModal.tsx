@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { X, Search, Eye, BookCheck, Crown, EyeOff, RefreshCw } from "lucide-react";
+import { X, Search, Eye, BookCheck, Crown, EyeOff, RefreshCw, ChevronUp } from "lucide-react";
 import type { WordStatusLevel } from "@/hooks/useWordStatus";
 import type { VocabWord } from "@/lib/vocabulary";
 
@@ -9,17 +9,18 @@ interface Props {
   words: VocabWord[];
   getStatus: (word: string) => WordStatusLevel;
   counts: { unseen: number; seen: number; developing: number; learnt: number; mastered: number };
+  onPromote?: (word: string, status: WordStatusLevel) => void;
 }
 
 const statusConfig: Record<WordStatusLevel, { icon: React.ElementType; label: string; colorClass: string; bgClass: string }> = {
   unseen: { icon: EyeOff, label: "Unseen", colorClass: "text-muted-foreground", bgClass: "bg-muted" },
-  seen: { icon: Eye, label: "Seen", colorClass: "text-amber-600 dark:text-amber-400", bgClass: "bg-amber-500/10" },
-  developing: { icon: RefreshCw, label: "Growing", colorClass: "text-orange-600 dark:text-orange-400", bgClass: "bg-orange-500/10" },
-  learnt: { icon: BookCheck, label: "Learnt", colorClass: "text-blue-600 dark:text-blue-400", bgClass: "bg-blue-500/10" },
-  mastered: { icon: Crown, label: "Mastered", colorClass: "text-emerald-600 dark:text-emerald-400", bgClass: "bg-emerald-500/10" },
+  seen: { icon: Eye, label: "Seen", colorClass: "text-amber-700", bgClass: "bg-amber-500/8" },
+  developing: { icon: RefreshCw, label: "Growing", colorClass: "text-orange-700", bgClass: "bg-orange-500/8" },
+  learnt: { icon: BookCheck, label: "Learnt", colorClass: "text-blue-700", bgClass: "bg-blue-500/8" },
+  mastered: { icon: Crown, label: "Mastered", colorClass: "text-emerald-700", bgClass: "bg-emerald-500/8" },
 };
 
-export default function WordDetailsModal({ open, onClose, words, getStatus, counts }: Props) {
+export default function WordDetailsModal({ open, onClose, words, getStatus, counts, onPromote }: Props) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<WordStatusLevel | "all">("all");
 
@@ -36,17 +37,15 @@ export default function WordDetailsModal({ open, onClose, words, getStatus, coun
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm flex flex-col">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center gap-3">
-        <button onClick={onClose} className="p-1.5 rounded-md hover:bg-muted transition-colors active:scale-95">
+    <div className="fixed inset-0 z-50 bg-background flex flex-col">
+      <div className="border-b border-border px-4 py-3 flex items-center gap-3">
+        <button onClick={onClose} className="p-1.5 rounded hover:bg-muted transition-colors active:scale-95">
           <X className="w-5 h-5 text-foreground" />
         </button>
         <p className="text-sm font-semibold text-foreground flex-1">Word Details</p>
         <span className="text-xs text-muted-foreground">{filtered.length} words</span>
       </div>
 
-      {/* Search */}
       <div className="px-4 pt-3 pb-2">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -55,13 +54,12 @@ export default function WordDetailsModal({ open, onClose, words, getStatus, coun
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search words or definitions…"
-            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary transition-colors"
+            className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-ring transition-colors"
             autoFocus
           />
         </div>
       </div>
 
-      {/* Filter tabs */}
       <div className="px-4 pb-3 flex gap-1.5 overflow-x-auto">
         <button
           onClick={() => setFilter("all")}
@@ -87,20 +85,30 @@ export default function WordDetailsModal({ open, onClose, words, getStatus, coun
         })}
       </div>
 
-      {/* Word list */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
+      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-1.5">
         {filtered.map((w, i) => {
           const cfg = statusConfig[w.status];
           const Icon = cfg.icon;
+          const canPromote = onPromote && w.status !== "mastered";
           return (
-            <div key={`${w.word}-${i}`} className="bg-card rounded-lg p-3 card-shadow">
+            <div key={`${w.word}-${i}`} className="bg-card rounded-lg p-3 border border-border">
               <div className="flex items-center gap-2 mb-1">
-                <Icon className={`w-4 h-4 shrink-0 ${cfg.colorClass}`} />
-                <span className="text-sm font-bold text-foreground flex-1">{w.word}</span>
-                <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${cfg.bgClass} ${cfg.colorClass}`}>{cfg.label}</span>
+                <Icon className={`w-3.5 h-3.5 shrink-0 ${cfg.colorClass}`} />
+                <span className="text-sm font-semibold text-foreground flex-1">{w.word}</span>
+                {canPromote && (
+                  <button
+                    onClick={() => onPromote(w.word, "mastered")}
+                    title="I know this word — mark as mastered"
+                    className="text-[10px] font-medium text-muted-foreground hover:text-foreground px-2 py-0.5 rounded border border-border hover:border-foreground/20 transition-colors flex items-center gap-0.5"
+                  >
+                    <ChevronUp className="w-3 h-3" />
+                    Know it
+                  </button>
+                )}
+                <span className={`text-[10px] font-medium px-2 py-0.5 rounded ${cfg.bgClass} ${cfg.colorClass}`}>{cfg.label}</span>
               </div>
-              <p className="text-xs text-muted-foreground ml-6">{w.definition}</p>
-              <p className="text-[10px] text-muted-foreground ml-6 mt-0.5 italic">{w.partOfSpeech}</p>
+              <p className="text-xs text-muted-foreground ml-5.5">{w.definition}</p>
+              <p className="text-[10px] text-muted-foreground ml-5.5 mt-0.5 italic">{w.partOfSpeech}</p>
             </div>
           );
         })}

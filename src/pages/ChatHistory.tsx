@@ -62,12 +62,11 @@ export default function ChatHistory() {
   const selected = conversations.find((c) => c.id === selectedId);
   const roleInfo = getRoleForBank(bank);
 
-  // Detail view
   if (selected) {
     return (
       <div className="min-h-screen flex flex-col max-w-md mx-auto">
-        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md px-4 py-3 flex items-center gap-3 border-b border-border">
-          <button onClick={() => setSelectedId(null)} className="p-1.5 rounded-md hover:bg-muted transition-colors active:scale-95">
+        <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center gap-3">
+          <button onClick={() => setSelectedId(null)} className="p-1.5 rounded hover:bg-muted transition-colors active:scale-95">
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
           <div className="flex-1 min-w-0">
@@ -76,10 +75,7 @@ export default function ChatHistory() {
               {new Date(selected.created_at).toLocaleDateString()} · {selected.rounds_completed} rounds
             </p>
           </div>
-          <button
-            onClick={() => deleteMutation.mutate(selected.id)}
-            className="p-1.5 rounded-md hover:bg-destructive/10 transition-colors active:scale-95"
-          >
+          <button onClick={() => deleteMutation.mutate(selected.id)} className="p-1.5 rounded hover:bg-destructive/10 transition-colors active:scale-95">
             <Trash2 className="w-4 h-4 text-destructive" />
           </button>
         </div>
@@ -90,7 +86,7 @@ export default function ChatHistory() {
               {msg.role === "ai" ? (
                 <div className="max-w-[85%]">
                   <p className="text-xs font-medium text-muted-foreground mb-1">{selected.role_label}</p>
-                  <div className="bg-card rounded-lg rounded-tl-sm p-3.5 card-shadow">
+                  <div className="bg-card rounded-lg rounded-tl-sm p-3.5 border border-border">
                     <p className="text-sm text-foreground leading-relaxed">{msg.content}</p>
                   </div>
                 </div>
@@ -106,16 +102,15 @@ export default function ChatHistory() {
     );
   }
 
-  // List view
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto">
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md px-4 py-3 flex items-center gap-3 border-b border-border">
-        <button onClick={() => navigate(`/learn?bank=${bank}`)} className="p-1.5 rounded-md hover:bg-muted transition-colors active:scale-95">
+      <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center gap-3">
+        <button onClick={() => navigate(`/learn?bank=${bank}`)} className="p-1.5 rounded hover:bg-muted transition-colors active:scale-95">
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
         <div className="flex-1">
-          <p className="text-sm font-semibold text-foreground">Chat History</p>
-          <p className="text-xs text-muted-foreground">{conversations.length} conversation{conversations.length !== 1 ? "s" : ""}</p>
+          <p className="text-sm font-semibold text-foreground">Past conversations</p>
+          <p className="text-xs text-muted-foreground">{conversations.length} total</p>
         </div>
       </div>
 
@@ -128,21 +123,19 @@ export default function ChatHistory() {
           <div className="text-center py-16">
             <MessageSquare className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
             <p className="text-sm text-muted-foreground">No conversations yet</p>
-            <p className="text-xs text-muted-foreground mt-1">Start a conversation practice to see history here</p>
           </div>
         ) : (
           <div className="space-y-2">
-            {conversations.map((conv, i) => {
+            {conversations.map((conv) => {
               const preview = conv.messages.find((m) => m.role === "user")?.content || "No messages";
               return (
                 <button
                   key={conv.id}
                   onClick={() => setSelectedId(conv.id)}
-                  className="w-full bg-card rounded-lg p-4 card-shadow text-left transition-all hover:card-shadow-hover active:scale-[0.98] flex items-center gap-3 opacity-0 animate-fade-up"
-                  style={{ animationDelay: `${i * 50}ms` }}
+                  className="w-full bg-card rounded-lg p-4 border border-border text-left transition-all hover:border-foreground/15 active:scale-[0.98] flex items-center gap-3"
                 >
-                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <MessageSquare className="w-4 h-4 text-primary" />
+                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                    <MessageSquare className="w-4 h-4 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground">{conv.role_label}</p>

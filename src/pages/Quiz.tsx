@@ -32,14 +32,10 @@ export default function Quiz() {
   const [initialized, setInitialized] = useState(false);
   const [noWords, setNoWords] = useState(false);
 
-  // Initialize quiz words once loading finishes
   if (!loading && !initialized) {
     const words = getQuizWords(10);
-    if (words.length === 0) {
-      setNoWords(true);
-    } else {
-      setQuizWords(words);
-    }
+    if (words.length === 0) setNoWords(true);
+    else setQuizWords(words);
     setInitialized(true);
   }
 
@@ -67,7 +63,6 @@ export default function Quiz() {
   const [showResult, setShowResult] = useState(false);
   const [finished, setFinished] = useState(false);
 
-  // Init results array when questions change
   if (questions.length > 0 && results.length === 0) {
     setResults(new Array(questions.length).fill(null));
   }
@@ -81,11 +76,7 @@ export default function Quiz() {
       if (showResult || !question || question.type !== "mcq") return;
       setMcqSelected(idx);
       const isCorrect = question.options[idx].isCorrect;
-      setResults((prev) => {
-        const n = [...prev];
-        n[currentQ] = isCorrect;
-        return n;
-      });
+      setResults((prev) => { const n = [...prev]; n[currentQ] = isCorrect; return n; });
       setShowResult(true);
       await recordQuizAnswer(question.word, "mcq", isCorrect);
     },
@@ -95,11 +86,7 @@ export default function Quiz() {
   const handleSpellingSubmit = useCallback(async () => {
     if (showResult || !question || question.type !== "spelling") return;
     const isCorrect = spellingInput.trim().toLowerCase() === question.answer.toLowerCase();
-    setResults((prev) => {
-      const n = [...prev];
-      n[currentQ] = isCorrect;
-      return n;
-    });
+    setResults((prev) => { const n = [...prev]; n[currentQ] = isCorrect; return n; });
     setShowResult(true);
     await recordQuizAnswer(question.answer, "spelling", isCorrect);
   }, [showResult, question, currentQ, spellingInput, recordQuizAnswer]);
@@ -108,11 +95,8 @@ export default function Quiz() {
     setMcqSelected(null);
     setSpellingInput("");
     setShowResult(false);
-    if (currentQ < questions.length - 1) {
-      setCurrentQ((i) => i + 1);
-    } else {
-      setFinished(true);
-    }
+    if (currentQ < questions.length - 1) setCurrentQ((i) => i + 1);
+    else setFinished(true);
   }, [currentQ, questions.length]);
 
   const handleRetry = () => {
@@ -131,30 +115,26 @@ export default function Quiz() {
     .filter((x) => x.correct === false)
     .map((x) => (x.q.type === "mcq" ? x.q.word : x.q.answer));
 
-  // Build portal word list from quiz words
   const portalWords = quizWords.map((w) => ({ word: w.word, status: getStatus(w.word) }));
 
-  // No words available screen
   if (noWords) {
     return (
       <div className="min-h-screen flex flex-col max-w-md mx-auto">
-        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md px-4 py-3 flex items-center gap-3 border-b border-border">
-          <button onClick={() => navigate(`/learn?bank=${bank}`)} className="p-1.5 rounded-md hover:bg-muted transition-colors active:scale-95">
+        <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center gap-3">
+          <button onClick={() => navigate(`/learn?bank=${bank}`)} className="p-1.5 rounded hover:bg-muted transition-colors active:scale-95">
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
           <p className="text-sm font-semibold text-foreground">Quiz</p>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center">
-          <AlertTriangle className="w-12 h-12 text-amber-500 mb-4" />
-          <h2 className="text-xl font-bold text-foreground mb-2">No words to quiz yet!</h2>
-          <p className="text-sm text-muted-foreground mb-6">
-            You need to study flashcards first so words become "Seen" before you can be quizzed on them.
-          </p>
+          <AlertTriangle className="w-10 h-10 text-warm mb-4" />
+          <h2 className="font-display text-xl text-foreground mb-2">No words to quiz yet</h2>
+          <p className="text-sm text-muted-foreground mb-6">Study flashcards first so words become "Seen".</p>
           <button
             onClick={() => navigate(`/flashcards?bank=${bank}`)}
-            className="py-3.5 px-8 rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-all active:scale-[0.97]"
+            className="py-3 px-8 rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-all active:scale-[0.97]"
           >
-            Study Flashcards First
+            Study flashcards
           </button>
         </div>
       </div>
@@ -175,46 +155,42 @@ export default function Quiz() {
 
     return (
       <div className="min-h-screen flex flex-col max-w-md mx-auto">
-        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md px-4 py-3 flex items-center gap-3 border-b border-border">
-          <button onClick={() => navigate(`/learn?bank=${bank}`)} className="p-1.5 rounded-md hover:bg-muted transition-colors active:scale-95">
+        <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center gap-3">
+          <button onClick={() => navigate(`/learn?bank=${bank}`)} className="p-1.5 rounded hover:bg-muted transition-colors active:scale-95">
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
-          <p className="text-sm font-semibold text-foreground">Quiz Results</p>
+          <p className="text-sm font-semibold text-foreground">Results</p>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8 opacity-0 animate-fade-up">
-          <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-6 ${passed ? "bg-success/10" : "bg-destructive/10"}`}>
-            <span className="text-4xl">{passed ? "🎉" : "💪"}</span>
-          </div>
-
-          <h2 className="text-2xl font-bold text-foreground mb-2">{score}%</h2>
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
+          <h2 className="font-display text-4xl text-foreground mb-2">{score}%</h2>
           <p className="text-sm text-muted-foreground mb-8">{correctCount} correct · {incorrectCount} incorrect</p>
 
           {weakWords.length > 0 && (
-            <div className="w-full bg-card rounded-lg p-4 card-shadow mb-6">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Words to review</p>
+            <div className="w-full bg-card rounded-lg p-4 border border-border mb-6">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Review these</p>
               <div className="flex flex-wrap gap-2">
                 {weakWords.map((w) => (
-                  <span key={w} className="text-sm bg-destructive/10 text-destructive px-2.5 py-1 rounded-md font-medium">{w}</span>
+                  <span key={w} className="text-sm bg-destructive/10 text-destructive px-2.5 py-1 rounded font-medium">{w}</span>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="w-full space-y-3">
-            <button onClick={() => navigate(`/flashcards?bank=${bank}`)} className="w-full py-3.5 rounded-lg bg-card text-foreground text-sm font-medium card-shadow transition-all active:scale-[0.97] flex items-center justify-center gap-2">
-              <RotateCcw className="w-4 h-4" /> Continue Studying
+          <div className="w-full space-y-2.5">
+            <button onClick={() => navigate(`/flashcards?bank=${bank}`)} className="w-full py-3 rounded-lg bg-card border border-border text-foreground text-sm font-medium transition-all active:scale-[0.97] flex items-center justify-center gap-2">
+              <RotateCcw className="w-4 h-4" /> Keep studying
             </button>
             {passed && (
-              <button onClick={() => navigate(`/practice?bank=${bank}`)} className="w-full py-3.5 rounded-lg bg-accent text-foreground text-sm font-medium card-shadow transition-all active:scale-[0.97] flex items-center justify-center gap-2">
-                <MessageSquare className="w-4 h-4" /> Try Conversation Practice
+              <button onClick={() => navigate(`/practice?bank=${bank}`)} className="w-full py-3 rounded-lg bg-accent text-accent-foreground text-sm font-medium border border-border transition-all active:scale-[0.97] flex items-center justify-center gap-2">
+                <MessageSquare className="w-4 h-4" /> Try conversation
               </button>
             )}
-            <button onClick={handleRetry} className="w-full py-3.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-all active:scale-[0.97] flex items-center justify-center gap-2">
-              Retry Quiz
+            <button onClick={handleRetry} className="w-full py-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-all active:scale-[0.97]">
+              Retry quiz
             </button>
-            <button onClick={() => navigate(`/learn?bank=${bank}`)} className="w-full py-2.5 text-sm text-muted-foreground font-medium hover:text-foreground transition-colors">
-              Back to Learning
+            <button onClick={() => navigate(`/learn?bank=${bank}`)} className="w-full py-2 text-sm text-muted-foreground font-medium hover:text-foreground transition-colors">
+              Back
             </button>
           </div>
         </div>
@@ -225,13 +201,13 @@ export default function Quiz() {
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto">
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md px-4 py-3 flex items-center gap-3 border-b border-border">
-        <button onClick={() => navigate(`/learn?bank=${bank}`)} className="p-1.5 rounded-md hover:bg-muted transition-colors active:scale-95">
+      <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center gap-3">
+        <button onClick={() => navigate(`/learn?bank=${bank}`)} className="p-1.5 rounded hover:bg-muted transition-colors active:scale-95">
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
         <div className="flex-1">
           <p className="text-sm font-semibold text-foreground">Quiz</p>
-          <p className="text-xs text-muted-foreground">Question {currentQ + 1} / {questions.length}</p>
+          <p className="text-xs text-muted-foreground">{currentQ + 1} / {questions.length}</p>
         </div>
         <div className="flex gap-1.5">
           <span className="text-xs font-medium text-success bg-success/10 px-2 py-0.5 rounded">✓ {correctCount}</span>
@@ -246,13 +222,13 @@ export default function Quiz() {
       <div className="flex-1 px-6 py-8 flex flex-col">
         {question.type === "mcq" ? (
           <>
-            <div className="mb-8 opacity-0 animate-fade-up">
-              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-2">What does this word mean?</p>
-              <h2 className="text-3xl font-bold text-foreground">{question.word}</h2>
+            <div className="mb-8">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-2">Define this word</p>
+              <h2 className="font-display text-3xl text-foreground">{question.word}</h2>
             </div>
-            <div className="space-y-3 flex-1">
+            <div className="space-y-2.5 flex-1">
               {question.options.map((opt, i) => {
-                let variant = "bg-card card-shadow";
+                let variant = "bg-card border border-border";
                 if (showResult && mcqSelected === i) {
                   variant = opt.isCorrect ? "bg-success/10 border-2 border-success" : "bg-destructive/10 border-2 border-destructive";
                 } else if (showResult && opt.isCorrect) {
@@ -263,8 +239,7 @@ export default function Quiz() {
                     key={opt.id}
                     onClick={() => handleMCQSelect(i)}
                     disabled={showResult}
-                    className={`w-full text-left rounded-lg p-4 transition-all active:scale-[0.97] opacity-0 animate-fade-up ${variant} ${!showResult ? "hover:ring-2 hover:ring-ring" : ""}`}
-                    style={{ animationDelay: `${i * 60}ms` }}
+                    className={`w-full text-left rounded-lg p-4 transition-all active:scale-[0.98] ${variant} ${!showResult ? "hover:border-foreground/20" : ""}`}
                   >
                     <div className="flex items-start gap-3">
                       <span className="w-6 h-6 rounded-full bg-muted text-muted-foreground text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
@@ -281,12 +256,12 @@ export default function Quiz() {
           </>
         ) : (
           <>
-            <div className="mb-8 opacity-0 animate-fade-up">
+            <div className="mb-8">
               <div className="flex items-center gap-2 mb-2">
                 <Keyboard className="w-4 h-4 text-primary" />
                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Spell the word</p>
               </div>
-              <p className="text-lg font-semibold text-foreground leading-relaxed mb-2">{question.definition}</p>
+              <p className="text-base font-medium text-foreground leading-relaxed mb-2">{question.definition}</p>
               <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">{question.partOfSpeech}</span>
             </div>
 
@@ -295,28 +270,24 @@ export default function Quiz() {
                 type="text"
                 value={spellingInput}
                 onChange={(e) => setSpellingInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && spellingInput.trim()) handleSpellingSubmit();
-                }}
+                onKeyDown={(e) => { if (e.key === "Enter" && spellingInput.trim()) handleSpellingSubmit(); }}
                 disabled={showResult}
                 placeholder="Type the word…"
                 className={`w-full text-center text-2xl font-bold py-4 px-6 rounded-xl border-2 bg-card outline-none transition-all ${
                   showResult
-                    ? results[currentQ]
-                      ? "border-success bg-success/5 text-success"
-                      : "border-destructive bg-destructive/5 text-destructive"
+                    ? results[currentQ] ? "border-success bg-success/5 text-success" : "border-destructive bg-destructive/5 text-destructive"
                     : "border-border focus:border-primary text-foreground"
                 }`}
                 autoFocus
               />
               {showResult && !results[currentQ] && (
                 <p className="text-center mt-3 text-sm">
-                  <span className="text-muted-foreground">Correct answer: </span>
+                  <span className="text-muted-foreground">Correct: </span>
                   <span className="font-bold text-success">{question.answer}</span>
                 </p>
               )}
               {showResult && results[currentQ] && (
-                <p className="text-center mt-3 text-sm text-success font-medium">✓ Correct!</p>
+                <p className="text-center mt-3 text-sm text-success font-medium">Correct</p>
               )}
             </div>
 
@@ -324,9 +295,9 @@ export default function Quiz() {
               <button
                 onClick={handleSpellingSubmit}
                 disabled={!spellingInput.trim()}
-                className="w-full py-3.5 mt-6 rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-all active:scale-[0.97] disabled:opacity-30 flex items-center justify-center gap-2"
+                className="w-full py-3 mt-6 rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-all active:scale-[0.97] disabled:opacity-30"
               >
-                Check Answer
+                Check
               </button>
             )}
           </>
@@ -335,9 +306,9 @@ export default function Quiz() {
         {showResult && (
           <button
             onClick={handleNext}
-            className="w-full py-3.5 mt-6 rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-all active:scale-[0.97] flex items-center justify-center gap-2 opacity-0 animate-fade-up"
+            className="w-full py-3 mt-6 rounded-lg bg-primary text-primary-foreground text-sm font-medium transition-all active:scale-[0.97] flex items-center justify-center gap-2"
           >
-            {currentQ < questions.length - 1 ? "Next Question" : "See Results"}
+            {currentQ < questions.length - 1 ? "Next" : "See results"}
             <ArrowRight className="w-4 h-4" />
           </button>
         )}

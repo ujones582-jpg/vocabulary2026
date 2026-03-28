@@ -6,11 +6,11 @@ import { useUserPreference } from "@/hooks/useUserPreference";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
-const banks: { id: WordBank; label: string; emoji: string }[] = [
-  { id: "beginner", label: "Beginner EFL", emoji: "🌱" },
-  { id: "intermediate", label: "Upper Primary & Middle School", emoji: "📚" },
-  { id: "everyday", label: "Everyday Conversational", emoji: "✈️" },
-  { id: "academic", label: "Advanced Academic", emoji: "🎓" },
+const banks: { id: WordBank; label: string; tag: string }[] = [
+  { id: "beginner", label: "Beginner EFL", tag: "A1" },
+  { id: "intermediate", label: "Upper Primary & Middle School", tag: "B1" },
+  { id: "everyday", label: "Everyday Conversational", tag: "B2" },
+  { id: "academic", label: "Advanced Academic", tag: "C1" },
 ];
 
 export default function Settings() {
@@ -45,8 +45,8 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto">
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md px-4 py-3 flex items-center gap-3 border-b border-border">
-        <button onClick={() => navigate("/learn")} className="p-1.5 rounded-md hover:bg-muted transition-colors active:scale-95">
+      <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center gap-3">
+        <button onClick={() => navigate("/learn")} className="p-1.5 rounded hover:bg-muted transition-colors active:scale-95">
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
         <p className="text-sm font-semibold text-foreground">Settings</p>
@@ -54,25 +54,25 @@ export default function Settings() {
 
       <div className="flex-1 px-4 py-6 space-y-6">
         <section>
-          <h2 className="text-sm font-bold text-foreground uppercase tracking-wider mb-1">Current Word Bank</h2>
+          <h2 className="font-display text-lg text-foreground mb-1">Current Word Bank</h2>
           <p className="text-xs text-muted-foreground mb-4">
-            {currentBank ? `${banks.find(b => b.id === currentBank)?.emoji} ${banks.find(b => b.id === currentBank)?.label}` : "None selected"}
+            {currentBank ? `${banks.find(b => b.id === currentBank)?.tag} · ${banks.find(b => b.id === currentBank)?.label}` : "None selected"}
           </p>
 
-          <h2 className="text-sm font-bold text-foreground uppercase tracking-wider mb-3">Change Word Bank</h2>
+          <h2 className="font-display text-lg text-foreground mb-3">Change Word Bank</h2>
           <div className="space-y-2">
             {banks.map(b => (
               <button
                 key={b.id}
                 onClick={() => handleBankSelect(b.id)}
                 disabled={b.id === currentBank}
-                className={`w-full text-left rounded-lg p-4 transition-all active:scale-[0.97] ${
+                className={`w-full text-left rounded-lg p-4 transition-all active:scale-[0.98] border ${
                   b.id === currentBank
-                    ? "bg-primary/10 border-2 border-primary opacity-60 cursor-default"
-                    : "bg-card card-shadow hover:card-shadow-hover"
+                    ? "border-primary/30 bg-primary/5 opacity-60 cursor-default"
+                    : "border-border bg-card hover:border-foreground/15"
                 }`}
               >
-                <span className="text-lg mr-3">{b.emoji}</span>
+                <span className="text-xs font-bold text-muted-foreground mr-2">{b.tag}</span>
                 <span className={`font-semibold text-sm ${b.id === currentBank ? "text-primary" : "text-foreground"}`}>
                   {b.label}
                 </span>
@@ -82,40 +82,39 @@ export default function Settings() {
           </div>
         </section>
 
-        {/* Warning modal */}
         {showWarning && (
-          <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-6">
-            <div className="bg-card rounded-2xl p-6 card-shadow max-w-sm w-full space-y-4">
+          <div className="fixed inset-0 z-50 bg-foreground/20 flex items-center justify-center p-6">
+            <div className="bg-card rounded-xl p-6 border border-border max-w-sm w-full space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
-                  <AlertTriangle className="w-6 h-6 text-destructive" />
+                <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-destructive" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-foreground">Change Word Bank?</h3>
-                  <p className="text-xs text-muted-foreground">This action cannot be undone</p>
+                  <h3 className="font-semibold text-foreground">Change word bank?</h3>
+                  <p className="text-xs text-muted-foreground">This cannot be undone</p>
                 </div>
               </div>
 
-              <div className="bg-destructive/5 border-2 border-destructive/30 rounded-lg p-4">
-                <p className="text-sm font-bold text-destructive mb-1">⚠️ ALL PROGRESS WILL BE DELETED</p>
+              <div className="bg-destructive/5 border border-destructive/20 rounded-lg p-3">
+                <p className="text-sm font-semibold text-destructive mb-0.5">All progress will be deleted</p>
                 <p className="text-xs text-destructive/80">
-                  Your flashcard progress, quiz scores, conversation history, and error bank will be permanently erased.
+                  Flashcard progress, quiz scores, conversation history, and error bank will be permanently erased.
                 </p>
               </div>
 
               <div className="flex gap-3">
                 <button
                   onClick={() => { setShowWarning(false); setNewBank(null); }}
-                  className="flex-1 py-3 rounded-lg bg-muted text-foreground text-sm font-medium transition-all active:scale-[0.97]"
+                  className="flex-1 py-2.5 rounded-lg border border-border text-foreground text-sm font-medium transition-all active:scale-[0.97]"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmChange}
                   disabled={saving}
-                  className="flex-1 py-3 rounded-lg bg-destructive text-destructive-foreground text-sm font-bold transition-all active:scale-[0.97]"
+                  className="flex-1 py-2.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold transition-all active:scale-[0.97]"
                 >
-                  {saving ? "Resetting…" : "Confirm & Reset"}
+                  {saving ? "Resetting…" : "Confirm"}
                 </button>
               </div>
             </div>

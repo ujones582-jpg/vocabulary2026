@@ -178,6 +178,21 @@ Respond with ONLY the JSON, nothing else.`;
         { role: "user", content: `Here is the conversation log (${roundCount} rounds):\n\n${conversationLog}\n\nScore the student's performance across: ${categoryList}` },
       ];
 
+    } else if (type === "define_word") {
+      // Generate a Merriam-Webster style definition for a user-submitted word
+      systemPrompt = `You are a lexicographer writing entries in the style of the Merriam-Webster dictionary.
+Given a word, provide:
+1. A clear, concise definition (one sentence, lowercase, no period)
+2. The part of speech (noun, verb, adjective, adverb, etc.)
+3. An example sentence using the word naturally
+
+Respond in this exact JSON format and nothing else:
+{"definition": "...", "partOfSpeech": "...", "example": "..."}`;
+      messages = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `Define the word: "${word}"` },
+      ];
+
     } else {
       throw new Error("Invalid request type");
     }
@@ -230,6 +245,13 @@ Respond with ONLY the JSON, nothing else.`;
         result = { scores: parsed.scores || parsed };
       } catch {
         result = { scores: {} };
+      }
+    } else if (type === "define_word") {
+      try {
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        result = jsonMatch ? JSON.parse(jsonMatch[0]) : { definition: content, partOfSpeech: "unknown", example: "" };
+      } catch {
+        result = { definition: content, partOfSpeech: "unknown", example: "" };
       }
     } else {
       result = { scene: content };

@@ -34,7 +34,6 @@ export default function ConversationPractice() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Start conversation with an AI opening message
   const startConversation = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -76,7 +75,7 @@ export default function ConversationPractice() {
         content: data?.message || "I see, tell me more!",
       }]);
     } catch (e: any) {
-      toast({ variant: "destructive", title: "AI Error", description: e?.message || "Failed to get response." });
+      toast({ variant: "destructive", title: "Error", description: e?.message || "Failed to get response." });
     } finally {
       setIsLoading(false);
     }
@@ -117,7 +116,6 @@ export default function ConversationPractice() {
         });
       }
 
-      // Save conversation history
       if (user) {
         await supabase.from("conversation_history").insert({
           user_id: user.id,
@@ -136,35 +134,31 @@ export default function ConversationPractice() {
 
   const categories = getScoreCategories(bank);
 
-  // Scoring overlay
   if (showScoring) {
     return (
       <div className="min-h-screen flex flex-col max-w-md mx-auto items-center justify-center px-6 py-8">
         {scoringLoading ? (
-          <div className="flex flex-col items-center gap-4 opacity-0 animate-fade-up">
+          <div className="flex flex-col items-center gap-4">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground">AI is scoring your conversation…</p>
+            <p className="text-sm text-muted-foreground">Scoring your conversation…</p>
           </div>
         ) : (
-          <div className="w-full opacity-0 animate-fade-up">
-            <h2 className="text-xl font-bold text-foreground text-center mb-2">Conversation Score</h2>
-            <p className="text-sm text-muted-foreground text-center mb-6">{roundCount} rounds completed</p>
+          <div className="w-full">
+            <h2 className="font-display text-2xl text-foreground text-center mb-1">Results</h2>
+            <p className="text-sm text-muted-foreground text-center mb-6">{roundCount} exchanges</p>
 
             <div className="space-y-4 mb-8">
-              {categories.map((cat, i) => {
+              {categories.map((cat) => {
                 const score = scores?.[cat.key] ?? 0;
                 return (
-                  <div key={cat.key} className="opacity-0 animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
+                  <div key={cat.key}>
                     <div className="flex justify-between items-baseline mb-1.5">
                       <p className="text-sm font-semibold text-foreground">{cat.label}</p>
                       <span className="text-sm font-bold text-primary">{score}/10</span>
                     </div>
                     <p className="text-xs text-muted-foreground mb-2">{cat.description}</p>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full transition-all duration-700"
-                        style={{ width: `${score * 10}%`, transitionDelay: `${200 + i * 100}ms` }}
-                      />
+                    <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${score * 10}%` }} />
                     </div>
                   </div>
                 );
@@ -173,9 +167,9 @@ export default function ConversationPractice() {
 
             <button
               onClick={() => navigate(`/learn?bank=${bank}`)}
-              className="w-full py-3.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold transition-all active:scale-[0.97]"
+              className="w-full py-3 rounded-lg bg-primary text-primary-foreground text-sm font-semibold transition-all active:scale-[0.97]"
             >
-              Continue Learning
+              Continue
             </button>
           </div>
         )}
@@ -185,66 +179,60 @@ export default function ConversationPractice() {
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md px-4 py-3 flex items-center gap-3 border-b border-border">
-        <button onClick={() => navigate(`/learn?bank=${bank}`)} className="p-1.5 rounded-md hover:bg-muted transition-colors active:scale-95">
+      <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3 flex items-center gap-3">
+        <button onClick={() => navigate(`/learn?bank=${bank}`)} className="p-1.5 rounded hover:bg-muted transition-colors active:scale-95">
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground">{roleInfo.label}</p>
           <p className="text-xs text-muted-foreground">
-            {roundCount === 0 ? "Start chatting!" : `${roundCount} exchange${roundCount !== 1 ? "s" : ""}`}
+            {roundCount === 0 ? "Start chatting" : `${roundCount} exchange${roundCount !== 1 ? "s" : ""}`}
           </p>
         </div>
         <button
           onClick={handleLeaveAndScore}
-          className="text-xs font-medium text-primary px-3 py-1.5 rounded-md bg-accent transition-colors active:scale-95 flex items-center gap-1"
+          className="text-xs font-medium text-foreground px-3 py-1.5 rounded border border-border hover:bg-muted transition-colors active:scale-95 flex items-center gap-1"
         >
           <LeaveIcon className="w-3 h-3" />
-          Leave & Score
+          End
         </button>
       </div>
 
-      {/* Chat area */}
       <div className="flex-1 px-4 py-4 space-y-3 overflow-y-auto">
-        {messages.map((msg, i) => (
-          <div key={msg.id} className={`opacity-0 ${msg.role === "user" ? "animate-slide-in-right" : "animate-slide-in-left"}`} style={{ animationDelay: `${i * 60}ms` }}>
-            {msg.role === "ai" && (
+        {messages.map((msg) => (
+          <div key={msg.id} className={msg.role === "user" ? "flex justify-end" : ""}>
+            {msg.role === "ai" ? (
               <div className="max-w-[85%]">
                 <p className="text-xs font-medium text-muted-foreground mb-1">{roleInfo.label}</p>
-                <div className="bg-card rounded-lg rounded-tl-sm p-3.5 card-shadow">
+                <div className="bg-card rounded-lg rounded-tl-sm p-3.5 border border-border">
                   <p className="text-sm text-foreground leading-relaxed">{msg.content}</p>
                 </div>
               </div>
-            )}
-            {msg.role === "user" && (
-              <div className="flex justify-end">
-                <div className="max-w-[85%] bg-primary rounded-lg rounded-tr-sm p-3.5">
-                  <p className="text-sm text-primary-foreground leading-relaxed">{msg.content}</p>
-                </div>
+            ) : (
+              <div className="max-w-[85%] bg-primary rounded-lg rounded-tr-sm p-3.5">
+                <p className="text-sm text-primary-foreground leading-relaxed">{msg.content}</p>
               </div>
             )}
           </div>
         ))}
 
         {isLoading && (
-          <div className="flex items-center gap-2 text-muted-foreground animate-fade-up">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-sm">AI is thinking…</span>
+            <span className="text-sm">Thinking…</span>
           </div>
         )}
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
-      <div className="sticky bottom-0 bg-background/80 backdrop-blur-md border-t border-border px-4 py-3">
+      <div className="sticky bottom-0 bg-background border-t border-border px-4 py-3">
         <form onSubmit={e => { e.preventDefault(); handleSubmit(); }} className="flex gap-2">
           <input
             value={input}
             onChange={e => setInput(e.target.value)}
             disabled={isLoading}
             placeholder="Type your message…"
-            className="flex-1 bg-card rounded-lg px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground card-shadow outline-none focus:ring-2 focus:ring-ring transition-shadow disabled:opacity-50"
+            className="flex-1 bg-card rounded-lg px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground border border-border outline-none focus:border-ring transition-colors disabled:opacity-50"
           />
           <button type="submit" disabled={!input.trim() || isLoading} className={`p-3 rounded-lg transition-all active:scale-95 ${input.trim() && !isLoading ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
             <Send className="w-4 h-4" />
