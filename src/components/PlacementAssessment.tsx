@@ -73,9 +73,9 @@ function computeRecommendation(
   vocabQuizWords.forEach((w, i) => {
     if (vocabCorrect[i]) {
       // correct → they know this level, push them at or above
-      const levelOrder: WordBank[] = ["beginner", "intermediate", "everyday", "academic"];
+      const levelOrder: WordBank[] = ["beginner", "intermediate", "everyday", "academic", "native"];
       const idx = levelOrder.indexOf(w.level);
-      if (idx < 3) scores[levelOrder[idx + 1]] += 1;
+      if (idx < 4) scores[levelOrder[idx + 1]] += 1;
       else scores[w.level] += 1;
     } else {
       // incorrect → this level or below
