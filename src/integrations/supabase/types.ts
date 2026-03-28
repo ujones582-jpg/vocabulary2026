@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      conversation_history: {
+        Row: {
+          bank: string
+          created_at: string
+          id: string
+          messages: Json
+          role_label: string
+          rounds_completed: number
+          user_id: string
+        }
+        Insert: {
+          bank: string
+          created_at?: string
+          id?: string
+          messages?: Json
+          role_label: string
+          rounds_completed?: number
+          user_id: string
+        }
+        Update: {
+          bank?: string
+          created_at?: string
+          id?: string
+          messages?: Json
+          role_label?: string
+          rounds_completed?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversation_scores: {
         Row: {
           bank: string
@@ -38,6 +68,39 @@ export type Database = {
           rounds_completed?: number
           scores?: Json
           user_id?: string
+        }
+        Relationships: []
+      }
+      custom_words: {
+        Row: {
+          bank: string
+          created_at: string | null
+          definition: string
+          example: string | null
+          id: string
+          part_of_speech: string
+          user_id: string
+          word: string
+        }
+        Insert: {
+          bank: string
+          created_at?: string | null
+          definition: string
+          example?: string | null
+          id?: string
+          part_of_speech: string
+          user_id: string
+          word: string
+        }
+        Update: {
+          bank?: string
+          created_at?: string | null
+          definition?: string
+          example?: string | null
+          id?: string
+          part_of_speech?: string
+          user_id?: string
+          word?: string
         }
         Relationships: []
       }
@@ -71,6 +134,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          selected_bank: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          selected_bank?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          selected_bank?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_progress: {
         Row: {
           bank: string
@@ -98,6 +185,45 @@ export type Database = {
           quiz_correct?: boolean | null
           set_number?: number
           studied?: boolean
+          updated_at?: string
+          user_id?: string
+          word?: string
+        }
+        Relationships: []
+      }
+      word_status: {
+        Row: {
+          ai_chat_used: boolean
+          bank: string
+          id: string
+          last_quizzed_at: string | null
+          mcq_correct_streak: number
+          spelling_correct_streak: number
+          status: string
+          updated_at: string
+          user_id: string
+          word: string
+        }
+        Insert: {
+          ai_chat_used?: boolean
+          bank: string
+          id?: string
+          last_quizzed_at?: string | null
+          mcq_correct_streak?: number
+          spelling_correct_streak?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+          word: string
+        }
+        Update: {
+          ai_chat_used?: boolean
+          bank?: string
+          id?: string
+          last_quizzed_at?: string | null
+          mcq_correct_streak?: number
+          spelling_correct_streak?: number
+          status?: string
           updated_at?: string
           user_id?: string
           word?: string
