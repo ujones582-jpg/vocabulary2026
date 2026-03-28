@@ -1314,7 +1314,7 @@ const intermediateWords: VocabWord[] = [
   { word: "recent", definition: "having happened or been done a short time ago", partOfSpeech: "adjective" },
   { word: "temporary", definition: "lasting for only a limited period of time; not permanent", partOfSpeech: "adjective" },
   // Set 17: Social & Emotional
-  { word: "apologize", definition: "to say you are sorry for something you did wrong", partOfSpeech: "verb" },
+  { word: "forgive", definition: "to stop feeling angry at someone for something they did wrong", partOfSpeech: "verb" },
   { word: "communicate", definition: "to share or exchange information, ideas, or feelings", partOfSpeech: "verb" },
   { word: "cooperate", definition: "to work together with others to achieve a common goal", partOfSpeech: "verb" },
   { word: "disagreement", definition: "a situation where people have different opinions", partOfSpeech: "noun" },
