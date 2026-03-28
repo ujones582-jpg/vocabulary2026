@@ -323,7 +323,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
         <div className="w-full h-1 bg-muted rounded-full mt-4">
           <div
             className="h-1 bg-primary rounded-full transition-all duration-300"
-            style={{ width: `${((vocabIdx + 1) / vocabQuizWords.length) * 100}%` }}
+            style={{ width: `${((vocabIdx + 1) / quizQuestions.length) * 100}%` }}
           />
         </div>
 
