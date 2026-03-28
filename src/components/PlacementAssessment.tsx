@@ -77,7 +77,7 @@ const QUESTIONS_PER_LEVEL = 1;
 
 /** Pick one random question per level for a varied quiz each time */
 function pickQuizQuestions(): VocabQuestion[] {
-  const levels: WordBank[] = ["beginner", "intermediate", "everyday", "academic", "native"];
+  const levels: WordBank[] = ["beginner", "elementary", "intermediate", "everyday", "academic", "native"];
   const picked: VocabQuestion[] = [];
   for (const level of levels) {
     const pool = vocabPool.filter(q => q.level === level);

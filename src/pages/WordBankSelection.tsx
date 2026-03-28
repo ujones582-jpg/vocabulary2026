@@ -8,6 +8,7 @@ import PlacementAssessment from "@/components/PlacementAssessment";
 
 const banks = [
   { id: "beginner" as WordBank, label: "Beginner EFL", desc: "Start from zero — no English needed", tag: "A1" },
+  { id: "elementary" as WordBank, label: "Elementary", desc: "Simple sentences · Daily life · Shopping · Travel", tag: "A2" },
   { id: "intermediate" as WordBank, label: "Upper Primary & Middle School", desc: "Grades 4–8 · Reading · Science · Social Studies", tag: "B1" },
   { id: "everyday" as WordBank, label: "Everyday Conversational", desc: "Travel · Idioms · Phone calls", tag: "B2" },
   { id: "academic" as WordBank, label: "Advanced Academic", desc: "TOEFL · IELTS · SAT", tag: "C1" },

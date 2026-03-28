@@ -9,6 +9,7 @@ import PlacementAssessment from "@/components/PlacementAssessment";
 
 const banks: { id: WordBank; label: string; tag: string }[] = [
   { id: "beginner", label: "Beginner EFL", tag: "A1" },
+  { id: "elementary", label: "Elementary", tag: "A2" },
   { id: "intermediate", label: "Upper Primary & Middle School", tag: "B1" },
   { id: "everyday", label: "Everyday Conversational", tag: "B2" },
   { id: "academic", label: "Advanced Academic", tag: "C1" },
