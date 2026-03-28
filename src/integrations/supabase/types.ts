@@ -128,6 +128,42 @@ export type Database = {
         }
         Relationships: []
       }
+      word_status: {
+        Row: {
+          ai_chat_used: boolean
+          bank: string
+          id: string
+          mcq_correct_streak: number
+          spelling_correct_streak: number
+          status: string
+          updated_at: string
+          user_id: string
+          word: string
+        }
+        Insert: {
+          ai_chat_used?: boolean
+          bank: string
+          id?: string
+          mcq_correct_streak?: number
+          spelling_correct_streak?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+          word: string
+        }
+        Update: {
+          ai_chat_used?: boolean
+          bank?: string
+          id?: string
+          mcq_correct_streak?: number
+          spelling_correct_streak?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+          word?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
