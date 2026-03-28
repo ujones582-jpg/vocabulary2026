@@ -1398,6 +1398,7 @@ export function getWordBank(type: WordBank): VocabWord[] {
     case "beginner": return beginnerWords;
     case "everyday": return everydayWords;
     case "intermediate": return intermediateWords;
+    case "native": return nativeWords;
   }
 }
 
