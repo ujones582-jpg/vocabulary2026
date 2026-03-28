@@ -181,6 +181,17 @@ export default function Quiz() {
     else setFinished(true);
   }, [currentQ, questions.length]);
 
+  const handleOverride = useCallback(async (overrideTo: boolean) => {
+    if (!question || question.type !== "spelling") return;
+    const word = question.answer;
+    setResults((prev) => { const n = [...prev]; n[currentQ] = overrideTo; return n; });
+    // Re-record with corrected result
+    await recordQuizAnswer(word, "spelling", overrideTo);
+    if (!overrideTo) {
+      await saveError(word, `Typed: "${spellingInput.trim()}"`, `Correct spelling: "${word}"`);
+    }
+  }, [question, currentQ, spellingInput, recordQuizAnswer, saveError]);
+
   const handleRetry = () => {
     if (source === "errors") {
       setInitialized(false);
