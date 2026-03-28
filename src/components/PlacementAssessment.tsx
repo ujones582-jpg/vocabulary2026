@@ -10,21 +10,24 @@ const standardizedTests = [
       { cutoff: 40, bank: "beginner" as WordBank },
       { cutoff: 61, bank: "intermediate" as WordBank },
       { cutoff: 91, bank: "everyday" as WordBank },
-      { cutoff: 121, bank: "academic" as WordBank },
+      { cutoff: 106, bank: "academic" as WordBank },
+      { cutoff: 121, bank: "native" as WordBank },
     ]},
   { id: "ielts", label: "IELTS", min: 0, max: 9, placeholder: "0–9", step: 0.5,
     thresholds: [
       { cutoff: 4, bank: "beginner" as WordBank },
       { cutoff: 6, bank: "intermediate" as WordBank },
       { cutoff: 7.5, bank: "everyday" as WordBank },
-      { cutoff: 10, bank: "academic" as WordBank },
+      { cutoff: 8.5, bank: "academic" as WordBank },
+      { cutoff: 10, bank: "native" as WordBank },
     ]},
   { id: "sat", label: "SAT (Reading & Writing)", min: 200, max: 800, placeholder: "200–800",
     thresholds: [
       { cutoff: 400, bank: "beginner" as WordBank },
       { cutoff: 530, bank: "intermediate" as WordBank },
       { cutoff: 650, bank: "everyday" as WordBank },
-      { cutoff: 801, bank: "academic" as WordBank },
+      { cutoff: 730, bank: "academic" as WordBank },
+      { cutoff: 801, bank: "native" as WordBank },
     ]},
 ];
 
