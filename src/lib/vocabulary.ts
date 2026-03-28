@@ -1432,6 +1432,7 @@ const rolePrompts: Record<WordBank, { role: RoleType; label: string }> = {
   beginner: { role: "teacher", label: "Kind Teacher" },
   everyday: { role: "local", label: "Native Friend" },
   intermediate: { role: "tutor", label: "School Tutor" },
+  native: { role: "examiner", label: "Professional Peer" },
 };
 
 export function getRoleForBank(bank: WordBank) {
