@@ -26,6 +26,7 @@ export default function LearnDashboard() {
   const bankLabels: Record<WordBank, string> = {
     academic: "Advanced Academic",
     beginner: "Beginner EFL",
+    elementary: "Elementary",
     everyday: "Everyday Conversational",
     intermediate: "Upper Primary & Middle School",
     native: "Native & University / Work",

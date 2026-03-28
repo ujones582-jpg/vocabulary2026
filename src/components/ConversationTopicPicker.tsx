@@ -20,6 +20,15 @@ const topicsByBank: Record<WordBank, ConversationTopic[]> = {
     { id: "sc-shop", label: "🛒 At the Shop", description: "Practice buying things", icon: <ShoppingCart className="w-5 h-5" />, type: "scenario", prompt: "Role-play: The student is at a small shop trying to buy fruit and snacks. You are the friendly shopkeeper. Use very simple English." },
     { id: "sc-school", label: "🏫 First Day of School", description: "Meet a new classmate", icon: <GraduationCap className="w-5 h-5" />, type: "scenario", prompt: "Role-play: It's the student's first day at a new school. You are a friendly classmate introducing yourself and showing them around. Keep language very simple." },
   ],
+  elementary: [
+    { id: "free", label: "Free Chat", description: "Talk about anything you like!", icon: <MessageSquare className="w-5 h-5" />, type: "topic", prompt: "free" },
+    { id: "daily", label: "Daily Life", description: "Routines, hobbies, weekends", icon: <Heart className="w-5 h-5" />, type: "topic", prompt: "Talk about daily routines, what you do after school, and your hobbies. Ask about their typical day." },
+    { id: "travel", label: "Travel & Places", description: "Countries, holidays, trips ✈️", icon: <Plane className="w-5 h-5" />, type: "topic", prompt: "Talk about travel, holidays, and places you want to visit. Ask about trips they have taken." },
+    { id: "shopping", label: "Shopping", description: "Buying things, prices, clothes 🛍️", icon: <ShoppingCart className="w-5 h-5" />, type: "topic", prompt: "Talk about shopping, what you like to buy, and your favourite shops." },
+    { id: "sc-restaurant", label: "🍽️ Ordering Food", description: "Practice ordering at a restaurant", icon: <Utensils className="w-5 h-5" />, type: "scenario", prompt: "Role-play: The student is at a simple restaurant. You are the waiter. Take their order, ask what they want to drink, and be friendly. Use A2-level English." },
+    { id: "sc-directions", label: "🗺️ Asking for Directions", description: "Find your way around town", icon: <Globe className="w-5 h-5" />, type: "scenario", prompt: "Role-play: The student is lost in a town and asks you for directions. You are a helpful local. Give simple directions using left, right, straight, and landmarks. Use A2-level English." },
+    { id: "sc-doctor", label: "🏥 Visiting the Doctor", description: "Describe how you feel", icon: <Stethoscope className="w-5 h-5" />, type: "scenario", prompt: "Role-play: The student is at the doctor. You are a friendly doctor. Ask about their symptoms, give simple advice. Use A2-level English." },
+  ],
   everyday: [
     { id: "free", label: "Free Chat", description: "Just vibes, talk about whatever", icon: <MessageSquare className="w-5 h-5" />, type: "topic", prompt: "free" },
     { id: "travel", label: "Travel & Adventure", description: "Trips, destinations, travel stories", icon: <Plane className="w-5 h-5" />, type: "topic", prompt: "Talk about travel experiences, dream destinations, and travel tips. Share stories about trips you've taken." },

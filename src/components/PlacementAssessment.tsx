@@ -7,7 +7,8 @@ import type { WordBank } from "@/lib/vocabulary";
 const standardizedTests = [
   { id: "toefl", label: "TOEFL", min: 0, max: 120, placeholder: "0–120",
     thresholds: [
-      { cutoff: 40, bank: "beginner" as WordBank },
+      { cutoff: 30, bank: "beginner" as WordBank },
+      { cutoff: 40, bank: "elementary" as WordBank },
       { cutoff: 61, bank: "intermediate" as WordBank },
       { cutoff: 91, bank: "everyday" as WordBank },
       { cutoff: 106, bank: "academic" as WordBank },
@@ -15,7 +16,8 @@ const standardizedTests = [
     ]},
   { id: "ielts", label: "IELTS", min: 0, max: 9, placeholder: "0–9", step: 0.5,
     thresholds: [
-      { cutoff: 4, bank: "beginner" as WordBank },
+      { cutoff: 3, bank: "beginner" as WordBank },
+      { cutoff: 4, bank: "elementary" as WordBank },
       { cutoff: 6, bank: "intermediate" as WordBank },
       { cutoff: 7.5, bank: "everyday" as WordBank },
       { cutoff: 8.5, bank: "academic" as WordBank },
@@ -23,7 +25,8 @@ const standardizedTests = [
     ]},
   { id: "sat", label: "SAT (Reading & Writing)", min: 200, max: 800, placeholder: "200–800",
     thresholds: [
-      { cutoff: 400, bank: "beginner" as WordBank },
+      { cutoff: 350, bank: "beginner" as WordBank },
+      { cutoff: 400, bank: "elementary" as WordBank },
       { cutoff: 530, bank: "intermediate" as WordBank },
       { cutoff: 650, bank: "everyday" as WordBank },
       { cutoff: 730, bank: "academic" as WordBank },
@@ -40,6 +43,13 @@ const vocabPool: VocabQuestion[] = [
   { word: "water", definition: "a clear liquid essential for life", level: "beginner", fakeDefinitions: ["a musical instrument", "a warm feeling", "a type of rock"] },
   { word: "help", definition: "to make it easier for someone to do something", level: "beginner", fakeDefinitions: ["to break apart", "a loud sound", "a kind of plant"] },
   { word: "bright", definition: "giving out or reflecting a lot of light", level: "beginner", fakeDefinitions: ["very heavy", "extremely slow", "a type of animal"] },
+
+  // ── Elementary ──
+  { word: "luggage", definition: "bags and suitcases you take when travelling", level: "elementary", fakeDefinitions: ["a type of lunch", "a musical instrument", "a small animal"] },
+  { word: "recipe", definition: "instructions for cooking a particular dish", level: "elementary", fakeDefinitions: ["a receipt from a shop", "a type of medicine", "a school report"] },
+  { word: "comfortable", definition: "making you feel relaxed and at ease", level: "elementary", fakeDefinitions: ["very expensive", "related to computers", "extremely difficult"] },
+  { word: "improve", definition: "to get better at something", level: "elementary", fakeDefinitions: ["to move to a new place", "to prove something wrong", "to make something smaller"] },
+  { word: "appointment", definition: "an arrangement to meet someone at a fixed time", level: "elementary", fakeDefinitions: ["a type of apartment", "a disappointing event", "a point on a map"] },
 
   // ── Intermediate ──
   { word: "community", definition: "a group of people living in the same area or sharing interests", level: "intermediate", fakeDefinitions: ["a type of building", "a loud noise", "an old tradition"] },
@@ -74,7 +84,7 @@ const QUESTIONS_PER_LEVEL = 1;
 
 /** Pick one random question per level for a varied quiz each time */
 function pickQuizQuestions(): VocabQuestion[] {
-  const levels: WordBank[] = ["beginner", "intermediate", "everyday", "academic", "native"];
+  const levels: WordBank[] = ["beginner", "elementary", "intermediate", "everyday", "academic", "native"];
   const picked: VocabQuestion[] = [];
   for (const level of levels) {
     const pool = vocabPool.filter(q => q.level === level);
@@ -113,7 +123,7 @@ function computeRecommendation(
   vocabCorrect: boolean[],
   quizQuestions: VocabQuestion[],
 ): WordBank {
-  const scores: Record<WordBank, number> = { beginner: 0, intermediate: 0, everyday: 0, academic: 0, native: 0 };
+  const scores: Record<WordBank, number> = { beginner: 0, elementary: 0, intermediate: 0, everyday: 0, academic: 0, native: 0 };
 
   testEntries.forEach(({ testId, score }) => {
     const bank = scoreToBankFromTest(testId, score);
@@ -122,9 +132,9 @@ function computeRecommendation(
 
   quizQuestions.forEach((w, i) => {
     if (vocabCorrect[i]) {
-      const levelOrder: WordBank[] = ["beginner", "intermediate", "everyday", "academic", "native"];
+      const levelOrder: WordBank[] = ["beginner", "elementary", "intermediate", "everyday", "academic", "native"];
       const idx = levelOrder.indexOf(w.level);
-      if (idx < 4) scores[levelOrder[idx + 1]] += 1;
+      if (idx < 5) scores[levelOrder[idx + 1]] += 1;
       else scores[w.level] += 1;
     } else {
       scores[w.level] += 1;
@@ -155,6 +165,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
 
   const bankLabels: Record<WordBank, string> = {
     beginner: "Beginner EFL",
+    elementary: "Elementary",
     intermediate: "Upper Primary & Middle School",
     everyday: "Everyday Conversational",
     academic: "Advanced Academic",
@@ -163,6 +174,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
 
   const bankTags: Record<WordBank, string> = {
     beginner: "A1",
+    elementary: "A2",
     intermediate: "B1",
     everyday: "B2",
     academic: "C1",

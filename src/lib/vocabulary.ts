@@ -1,4 +1,4 @@
-export type WordBank = "academic" | "beginner" | "everyday" | "intermediate" | "native";
+export type WordBank = "academic" | "beginner" | "elementary" | "everyday" | "intermediate" | "native";
 export type RoleType = "examiner" | "teacher" | "local" | "tutor";
 
 export interface VocabWord {
@@ -1631,12 +1631,250 @@ const nativeWords: VocabWord[] = [
   { word: "indefeasible", definition: "not able to be annulled or made void", partOfSpeech: "adjective", example: "Citizens have an indefeasible right to due process under the law." },
 ];
 
+// ─── ELEMENTARY WORDS (215) — A2 level ─────────────────────
+const elementaryWords: VocabWord[] = [
+  // Set 1: Daily Routines
+  { word: "breakfast", definition: "the first meal of the day, eaten in the morning", partOfSpeech: "noun", example: "I have breakfast at seven o'clock." },
+  { word: "lunch", definition: "a meal eaten in the middle of the day", partOfSpeech: "noun", example: "We eat lunch at school." },
+  { word: "dinner", definition: "the main meal of the day, usually in the evening", partOfSpeech: "noun", example: "My family has dinner together." },
+  { word: "brush", definition: "to clean something using a brush", partOfSpeech: "verb", example: "I brush my teeth every morning." },
+  { word: "wake", definition: "to stop sleeping", partOfSpeech: "verb", example: "I wake up at six o'clock." },
+  { word: "shower", definition: "washing your body under falling water", partOfSpeech: "noun", example: "I take a shower before school." },
+  { word: "homework", definition: "school work that you do at home", partOfSpeech: "noun", example: "I do my homework after dinner." },
+  { word: "ready", definition: "prepared for something", partOfSpeech: "adjective", example: "Are you ready to go?" },
+  { word: "always", definition: "at all times; every time", partOfSpeech: "adverb", example: "I always eat breakfast." },
+  { word: "never", definition: "not at any time; not ever", partOfSpeech: "adverb", example: "I never eat spicy food." },
+  // Set 2: Around Town
+  { word: "shop", definition: "a place where you buy things", partOfSpeech: "noun", example: "I went to the shop to buy milk." },
+  { word: "street", definition: "a road in a town or city", partOfSpeech: "noun", example: "The shop is on the main street." },
+  { word: "hospital", definition: "a place where sick people go to get better", partOfSpeech: "noun", example: "My uncle works at the hospital." },
+  { word: "library", definition: "a place where you can borrow books", partOfSpeech: "noun", example: "I read books at the library." },
+  { word: "restaurant", definition: "a place where you go to eat food", partOfSpeech: "noun", example: "We ate at a nice restaurant." },
+  { word: "station", definition: "a place where buses or trains stop", partOfSpeech: "noun", example: "The train station is near my house." },
+  { word: "bank", definition: "a place where you keep your money", partOfSpeech: "noun", example: "My mother went to the bank." },
+  { word: "park", definition: "a green area in a town for people to enjoy", partOfSpeech: "noun", example: "We play football in the park." },
+  { word: "cinema", definition: "a place where you watch films", partOfSpeech: "noun", example: "Let's go to the cinema tonight." },
+  { word: "corner", definition: "the point where two streets or sides meet", partOfSpeech: "noun", example: "The bakery is on the corner." },
+  // Set 3: Describing People
+  { word: "tall", definition: "having a greater than average height", partOfSpeech: "adjective", example: "My brother is very tall." },
+  { word: "short", definition: "not tall; having less height than average", partOfSpeech: "adjective", example: "The little girl is short." },
+  { word: "strong", definition: "having a lot of physical power", partOfSpeech: "adjective", example: "The man is very strong." },
+  { word: "weak", definition: "not strong; lacking power", partOfSpeech: "adjective", example: "I feel weak when I am sick." },
+  { word: "kind", definition: "friendly and caring about other people", partOfSpeech: "adjective", example: "She is a kind person." },
+  { word: "angry", definition: "feeling strong displeasure or annoyance", partOfSpeech: "adjective", example: "He was angry about the broken window." },
+  { word: "clever", definition: "able to learn and understand things quickly", partOfSpeech: "adjective", example: "She is a clever student." },
+  { word: "lazy", definition: "not wanting to work or be active", partOfSpeech: "adjective", example: "The lazy cat sleeps all day." },
+  { word: "polite", definition: "having good manners and being respectful", partOfSpeech: "adjective", example: "He is always polite to everyone." },
+  { word: "shy", definition: "nervous or uncomfortable around other people", partOfSpeech: "adjective", example: "She is too shy to speak in class." },
+  // Set 4: Travel & Transport
+  { word: "airport", definition: "a place where planes take off and land", partOfSpeech: "noun", example: "We arrived at the airport early." },
+  { word: "ticket", definition: "a piece of paper that lets you travel or enter a place", partOfSpeech: "noun", example: "I bought a train ticket." },
+  { word: "passport", definition: "an official document for travelling to other countries", partOfSpeech: "noun", example: "Don't forget your passport!" },
+  { word: "luggage", definition: "bags and suitcases you take when travelling", partOfSpeech: "noun", example: "My luggage is very heavy." },
+  { word: "bus", definition: "a large vehicle that carries many passengers", partOfSpeech: "noun", example: "I take the bus to school." },
+  { word: "taxi", definition: "a car with a driver that you pay to take you somewhere", partOfSpeech: "noun", example: "We took a taxi to the hotel." },
+  { word: "arrive", definition: "to reach a place at the end of a journey", partOfSpeech: "verb", example: "We will arrive at noon." },
+  { word: "leave", definition: "to go away from a place", partOfSpeech: "verb", example: "The train leaves at ten o'clock." },
+  { word: "travel", definition: "to go from one place to another, usually far away", partOfSpeech: "verb", example: "I want to travel to Japan." },
+  { word: "map", definition: "a drawing that shows where places are", partOfSpeech: "noun", example: "We used a map to find the museum." },
+  // Set 5: Health & Body
+  { word: "headache", definition: "a pain in your head", partOfSpeech: "noun", example: "I have a terrible headache." },
+  { word: "stomach", definition: "the part of your body where food is digested", partOfSpeech: "noun", example: "My stomach hurts after eating too much." },
+  { word: "medicine", definition: "something you take to feel better when you are sick", partOfSpeech: "noun", example: "The doctor gave me some medicine." },
+  { word: "temperature", definition: "how hot or cold something is; also a sign of fever", partOfSpeech: "noun", example: "The nurse took my temperature." },
+  { word: "cough", definition: "to push air out of your throat with a sudden sound", partOfSpeech: "verb", example: "I can't stop coughing." },
+  { word: "hurt", definition: "to feel pain or to cause pain", partOfSpeech: "verb", example: "My leg hurts." },
+  { word: "healthy", definition: "in good physical condition; not sick", partOfSpeech: "adjective", example: "Eating fruit helps you stay healthy." },
+  { word: "sick", definition: "not well; having an illness", partOfSpeech: "adjective", example: "I stayed home because I was sick." },
+  { word: "dentist", definition: "a doctor who looks after your teeth", partOfSpeech: "noun", example: "I visit the dentist twice a year." },
+  { word: "exercise", definition: "physical activity to keep your body fit", partOfSpeech: "noun", example: "Exercise is good for your health." },
+  // Set 6: Shopping & Money
+  { word: "buy", definition: "to get something by paying money for it", partOfSpeech: "verb", example: "I want to buy a new phone." },
+  { word: "sell", definition: "to give something to someone for money", partOfSpeech: "verb", example: "They sell fresh vegetables at the market." },
+  { word: "price", definition: "the amount of money something costs", partOfSpeech: "noun", example: "What is the price of this shirt?" },
+  { word: "cheap", definition: "costing little money; not expensive", partOfSpeech: "adjective", example: "This bag is very cheap." },
+  { word: "expensive", definition: "costing a lot of money", partOfSpeech: "adjective", example: "That watch is too expensive." },
+  { word: "money", definition: "coins and notes used to buy things", partOfSpeech: "noun", example: "I don't have enough money." },
+  { word: "pay", definition: "to give money for something", partOfSpeech: "verb", example: "I need to pay for my lunch." },
+  { word: "change", definition: "the money you get back when you pay too much", partOfSpeech: "noun", example: "Here is your change." },
+  { word: "size", definition: "how big or small something is", partOfSpeech: "noun", example: "What size shoes do you wear?" },
+  { word: "try", definition: "to attempt to do something; to test something", partOfSpeech: "verb", example: "Can I try on this jacket?" },
+  // Set 7: Hobbies & Free Time
+  { word: "hobby", definition: "an activity you enjoy doing in your free time", partOfSpeech: "noun", example: "My hobby is painting." },
+  { word: "enjoy", definition: "to get pleasure from something", partOfSpeech: "verb", example: "I enjoy listening to music." },
+  { word: "practice", definition: "to do something many times to get better at it", partOfSpeech: "verb", example: "I practice piano every day." },
+  { word: "guitar", definition: "a musical instrument with strings", partOfSpeech: "noun", example: "He plays the guitar very well." },
+  { word: "swimming", definition: "the activity of moving through water", partOfSpeech: "noun", example: "I go swimming on Saturdays." },
+  { word: "team", definition: "a group of people who work or play together", partOfSpeech: "noun", example: "I am on the football team." },
+  { word: "match", definition: "a game between two teams or players", partOfSpeech: "noun", example: "We won the match!" },
+  { word: "score", definition: "to get a point in a game", partOfSpeech: "verb", example: "She scored two goals." },
+  { word: "collect", definition: "to gather things together as a hobby", partOfSpeech: "verb", example: "I collect stamps from different countries." },
+  { word: "bored", definition: "feeling tired and uninterested", partOfSpeech: "adjective", example: "I am bored — there is nothing to do." },
+  // Set 8: Food & Cooking
+  { word: "recipe", definition: "instructions for cooking a particular dish", partOfSpeech: "noun", example: "I followed the recipe to make a cake." },
+  { word: "ingredient", definition: "one of the foods used to make a dish", partOfSpeech: "noun", example: "Flour is an ingredient in bread." },
+  { word: "boil", definition: "to heat water until it bubbles", partOfSpeech: "verb", example: "Boil the water before adding the pasta." },
+  { word: "fry", definition: "to cook food in hot oil", partOfSpeech: "verb", example: "I fry eggs for breakfast." },
+  { word: "taste", definition: "the flavour of food or drink", partOfSpeech: "noun", example: "This soup has a nice taste." },
+  { word: "delicious", definition: "having a very pleasant taste", partOfSpeech: "adjective", example: "The pizza was delicious!" },
+  { word: "fresh", definition: "recently made or picked; not old", partOfSpeech: "adjective", example: "I bought some fresh fruit." },
+  { word: "slice", definition: "a thin piece cut from something", partOfSpeech: "noun", example: "Can I have a slice of cake?" },
+  { word: "spicy", definition: "having a strong hot flavour", partOfSpeech: "adjective", example: "This curry is very spicy." },
+  { word: "serve", definition: "to give food or drink to someone", partOfSpeech: "verb", example: "She served us tea and biscuits." },
+  // Set 9: Weather & Seasons
+  { word: "cloudy", definition: "with many clouds in the sky", partOfSpeech: "adjective", example: "It is cloudy today." },
+  { word: "sunny", definition: "with a lot of bright sunlight", partOfSpeech: "adjective", example: "It was a sunny day." },
+  { word: "storm", definition: "very bad weather with strong wind and rain", partOfSpeech: "noun", example: "There was a big storm last night." },
+  { word: "snow", definition: "soft white pieces of frozen water that fall from the sky", partOfSpeech: "noun", example: "The children played in the snow." },
+  { word: "degree", definition: "a unit for measuring temperature", partOfSpeech: "noun", example: "It is thirty degrees outside." },
+  { word: "season", definition: "one of the four parts of the year (spring, summer, autumn, winter)", partOfSpeech: "noun", example: "Autumn is my favourite season." },
+  { word: "spring", definition: "the season between winter and summer", partOfSpeech: "noun", example: "Flowers grow in spring." },
+  { word: "summer", definition: "the warmest season of the year", partOfSpeech: "noun", example: "We go to the beach in summer." },
+  { word: "autumn", definition: "the season between summer and winter when leaves fall", partOfSpeech: "noun", example: "The leaves turn red in autumn." },
+  { word: "winter", definition: "the coldest season of the year", partOfSpeech: "noun", example: "It snows a lot in winter." },
+  // Set 10: Clothes & Appearance
+  { word: "jacket", definition: "a short coat", partOfSpeech: "noun", example: "Put on your jacket — it's cold." },
+  { word: "trousers", definition: "a piece of clothing that covers each leg separately", partOfSpeech: "noun", example: "He wore black trousers." },
+  { word: "uniform", definition: "special clothes worn for school or work", partOfSpeech: "noun", example: "We wear a uniform to school." },
+  { word: "comfortable", definition: "making you feel relaxed and at ease", partOfSpeech: "adjective", example: "These shoes are very comfortable." },
+  { word: "fashionable", definition: "popular and in style right now", partOfSpeech: "adjective", example: "She always wears fashionable clothes." },
+  { word: "wear", definition: "to have clothes on your body", partOfSpeech: "verb", example: "I wear glasses." },
+  { word: "pocket", definition: "a small bag sewn into clothing for carrying small things", partOfSpeech: "noun", example: "I put my keys in my pocket." },
+  { word: "fit", definition: "to be the right size or shape", partOfSpeech: "verb", example: "This shirt doesn't fit me." },
+  { word: "cotton", definition: "a soft white material used to make clothes", partOfSpeech: "noun", example: "This T-shirt is made of cotton." },
+  { word: "pattern", definition: "a repeated design on fabric or a surface", partOfSpeech: "noun", example: "I like the flower pattern on this dress." },
+  // Set 11: Communication
+  { word: "message", definition: "a piece of information sent to someone", partOfSpeech: "noun", example: "I sent her a text message." },
+  { word: "email", definition: "a message sent electronically using a computer", partOfSpeech: "noun", example: "I will send you an email." },
+  { word: "explain", definition: "to make something clear so someone understands", partOfSpeech: "verb", example: "Can you explain this word to me?" },
+  { word: "agree", definition: "to have the same opinion as someone", partOfSpeech: "verb", example: "I agree with you." },
+  { word: "disagree", definition: "to have a different opinion from someone", partOfSpeech: "verb", example: "I disagree with that idea." },
+  { word: "invite", definition: "to ask someone to come to an event", partOfSpeech: "verb", example: "I invited my friends to my party." },
+  { word: "promise", definition: "to tell someone you will definitely do something", partOfSpeech: "verb", example: "I promise to help you." },
+  { word: "suggest", definition: "to put forward an idea for someone to think about", partOfSpeech: "verb", example: "I suggest we go to the park." },
+  { word: "reply", definition: "to answer or respond to someone", partOfSpeech: "verb", example: "She didn't reply to my message." },
+  { word: "conversation", definition: "a talk between two or more people", partOfSpeech: "noun", example: "We had a nice conversation." },
+  // Set 12: Feelings & Emotions
+  { word: "excited", definition: "feeling very happy and enthusiastic", partOfSpeech: "adjective", example: "I am excited about the trip!" },
+  { word: "worried", definition: "feeling anxious about something", partOfSpeech: "adjective", example: "She was worried about the exam." },
+  { word: "surprised", definition: "feeling amazed because something unexpected happened", partOfSpeech: "adjective", example: "I was surprised by the gift." },
+  { word: "proud", definition: "feeling pleased about something you or someone else has done", partOfSpeech: "adjective", example: "My parents are proud of me." },
+  { word: "frightened", definition: "feeling afraid or scared", partOfSpeech: "adjective", example: "The little boy was frightened of the dark." },
+  { word: "lonely", definition: "feeling sad because you are alone", partOfSpeech: "adjective", example: "She felt lonely at her new school." },
+  { word: "jealous", definition: "feeling unhappy because someone has something you want", partOfSpeech: "adjective", example: "He was jealous of his friend's new bike." },
+  { word: "confident", definition: "feeling sure about your own abilities", partOfSpeech: "adjective", example: "She felt confident before the test." },
+  { word: "nervous", definition: "feeling worried or slightly afraid", partOfSpeech: "adjective", example: "I was nervous before my speech." },
+  { word: "disappointed", definition: "feeling sad because something was not as good as expected", partOfSpeech: "adjective", example: "I was disappointed with my score." },
+  // Set 13: School Subjects & Learning
+  { word: "subject", definition: "an area of knowledge studied in school", partOfSpeech: "noun", example: "Science is my favourite subject." },
+  { word: "exam", definition: "a formal test of knowledge", partOfSpeech: "noun", example: "I have a math exam tomorrow." },
+  { word: "mistake", definition: "something done wrong; an error", partOfSpeech: "noun", example: "I made a mistake in my spelling." },
+  { word: "correct", definition: "right; without any errors", partOfSpeech: "adjective", example: "All my answers were correct." },
+  { word: "difficult", definition: "not easy; hard to do or understand", partOfSpeech: "adjective", example: "The test was very difficult." },
+  { word: "easy", definition: "not difficult; simple to do", partOfSpeech: "adjective", example: "This question is easy." },
+  { word: "project", definition: "a piece of work that involves research or planning", partOfSpeech: "noun", example: "We are working on a science project." },
+  { word: "presentation", definition: "a talk or show given to a group of people", partOfSpeech: "noun", example: "I gave a presentation about animals." },
+  { word: "improve", definition: "to get better at something", partOfSpeech: "verb", example: "I want to improve my English." },
+  { word: "revise", definition: "to study again to prepare for an exam", partOfSpeech: "verb", example: "I need to revise for my test." },
+  // Set 14: Nature & Environment
+  { word: "forest", definition: "a large area covered with trees", partOfSpeech: "noun", example: "We went for a walk in the forest." },
+  { word: "river", definition: "a large natural stream of water", partOfSpeech: "noun", example: "The river flows to the sea." },
+  { word: "mountain", definition: "a very high hill", partOfSpeech: "noun", example: "We climbed the mountain." },
+  { word: "island", definition: "a piece of land surrounded by water", partOfSpeech: "noun", example: "We visited a small island." },
+  { word: "beach", definition: "an area of sand next to the sea", partOfSpeech: "noun", example: "We played on the beach." },
+  { word: "ocean", definition: "a very large area of salt water", partOfSpeech: "noun", example: "The Pacific Ocean is the biggest." },
+  { word: "environment", definition: "the natural world around us", partOfSpeech: "noun", example: "We should protect the environment." },
+  { word: "recycle", definition: "to use materials again instead of throwing them away", partOfSpeech: "verb", example: "We recycle paper and plastic." },
+  { word: "pollution", definition: "harmful substances in the air, water, or earth", partOfSpeech: "noun", example: "Air pollution is bad for our health." },
+  { word: "wild", definition: "living in nature; not tame", partOfSpeech: "adjective", example: "We saw wild animals at the safari." },
+  // Set 15: Technology
+  { word: "computer", definition: "an electronic machine for storing and working with information", partOfSpeech: "noun", example: "I use the computer for homework." },
+  { word: "internet", definition: "a global network that connects computers", partOfSpeech: "noun", example: "I search for information on the internet." },
+  { word: "website", definition: "a set of pages on the internet", partOfSpeech: "noun", example: "I visited the school's website." },
+  { word: "download", definition: "to copy something from the internet to your device", partOfSpeech: "verb", example: "I downloaded a new game." },
+  { word: "password", definition: "a secret word used to access something", partOfSpeech: "noun", example: "Don't share your password." },
+  { word: "screen", definition: "the flat surface on a phone, computer, or TV that shows images", partOfSpeech: "noun", example: "The screen on my phone is cracked." },
+  { word: "search", definition: "to look for something", partOfSpeech: "verb", example: "I searched for the answer online." },
+  { word: "charge", definition: "to put electricity into a battery", partOfSpeech: "verb", example: "I need to charge my phone." },
+  { word: "app", definition: "a program on a phone or tablet", partOfSpeech: "noun", example: "I use an app to learn English." },
+  { word: "connect", definition: "to join or link together", partOfSpeech: "verb", example: "I can't connect to the Wi-Fi." },
+  // Set 16: Time & Schedules
+  { word: "appointment", definition: "an arrangement to meet someone at a fixed time", partOfSpeech: "noun", example: "I have a dentist appointment at three." },
+  { word: "timetable", definition: "a list showing times when things happen", partOfSpeech: "noun", example: "Check the bus timetable." },
+  { word: "early", definition: "before the expected time", partOfSpeech: "adjective", example: "I woke up early today." },
+  { word: "late", definition: "after the expected time", partOfSpeech: "adjective", example: "Sorry, I am late!" },
+  { word: "weekend", definition: "Saturday and Sunday", partOfSpeech: "noun", example: "What are you doing this weekend?" },
+  { word: "holiday", definition: "a period of time when you don't work or go to school", partOfSpeech: "noun", example: "We went to France on holiday." },
+  { word: "century", definition: "a period of one hundred years", partOfSpeech: "noun", example: "We live in the twenty-first century." },
+  { word: "quarter", definition: "one of four equal parts; fifteen minutes", partOfSpeech: "noun", example: "It's a quarter past nine." },
+  { word: "midnight", definition: "twelve o'clock at night", partOfSpeech: "noun", example: "I never stay up until midnight." },
+  { word: "recently", definition: "not long ago", partOfSpeech: "adverb", example: "I recently started learning guitar." },
+  // Set 17: Home & Chores
+  { word: "kitchen", definition: "the room where you cook food", partOfSpeech: "noun", example: "My mum is cooking in the kitchen." },
+  { word: "bedroom", definition: "the room where you sleep", partOfSpeech: "noun", example: "My bedroom is upstairs." },
+  { word: "bathroom", definition: "the room with a bath or shower and toilet", partOfSpeech: "noun", example: "The bathroom is next to the kitchen." },
+  { word: "garden", definition: "an area of land next to a house where plants grow", partOfSpeech: "noun", example: "We have flowers in our garden." },
+  { word: "neighbour", definition: "a person who lives near you", partOfSpeech: "noun", example: "Our neighbour is very friendly." },
+  { word: "tidy", definition: "neat and in order", partOfSpeech: "adjective", example: "Please keep your room tidy." },
+  { word: "messy", definition: "untidy; not clean or organized", partOfSpeech: "adjective", example: "His desk is always messy." },
+  { word: "repair", definition: "to fix something that is broken", partOfSpeech: "verb", example: "My dad repaired the broken chair." },
+  { word: "furniture", definition: "things like tables, chairs, and beds in a room", partOfSpeech: "noun", example: "We bought new furniture for the living room." },
+  { word: "electricity", definition: "the power used to make lights and machines work", partOfSpeech: "noun", example: "Turn off the lights to save electricity." },
+  // Set 18: Social & Relationships
+  { word: "neighbour", definition: "someone who lives next to or near you", partOfSpeech: "noun", example: "Our neighbours are very kind." },
+  { word: "introduce", definition: "to tell people each other's names when they first meet", partOfSpeech: "verb", example: "Let me introduce you to my sister." },
+  { word: "relationship", definition: "the way people feel about and behave toward each other", partOfSpeech: "noun", example: "They have a good relationship." },
+  { word: "celebrate", definition: "to do something special for a happy event", partOfSpeech: "verb", example: "We celebrate my birthday with a party." },
+  { word: "gift", definition: "something you give to someone; a present", partOfSpeech: "noun", example: "I got a gift for my friend." },
+  { word: "together", definition: "with each other; as a group", partOfSpeech: "adverb", example: "We always eat together." },
+  { word: "share", definition: "to let someone have part of something", partOfSpeech: "verb", example: "I share my lunch with my friend." },
+  { word: "forgive", definition: "to stop being angry with someone for something they did", partOfSpeech: "verb", example: "I forgive you for being late." },
+  { word: "argument", definition: "a disagreement between people, often with angry words", partOfSpeech: "noun", example: "They had an argument about the game." },
+  { word: "respect", definition: "to show care and consideration for someone", partOfSpeech: "verb", example: "We should respect our teachers." },
+  // Set 19: Directions & Places
+  { word: "direction", definition: "the way you need to go to get somewhere", partOfSpeech: "noun", example: "Can you give me directions to the station?" },
+  { word: "opposite", definition: "on the other side; facing", partOfSpeech: "preposition", example: "The school is opposite the park." },
+  { word: "straight", definition: "continuing in one direction without turning", partOfSpeech: "adverb", example: "Go straight and then turn left." },
+  { word: "bridge", definition: "a structure built over a river or road so people can cross", partOfSpeech: "noun", example: "We walked across the bridge." },
+  { word: "entrance", definition: "the way into a place; a door or gate to go in", partOfSpeech: "noun", example: "The entrance is on the left." },
+  { word: "somewhere", definition: "in or to a place that is not known or not named", partOfSpeech: "adverb", example: "Let's go somewhere fun." },
+  { word: "path", definition: "a narrow way for walking", partOfSpeech: "noun", example: "We followed the path through the woods." },
+  { word: "cross", definition: "to go from one side to the other", partOfSpeech: "verb", example: "Be careful when you cross the road." },
+  { word: "distance", definition: "the amount of space between two places", partOfSpeech: "noun", example: "It's a short distance to the shop." },
+  { word: "nearby", definition: "not far away; close", partOfSpeech: "adverb", example: "Is there a supermarket nearby?" },
+  // Set 20: Work & Jobs
+  { word: "job", definition: "regular work that you do to earn money", partOfSpeech: "noun", example: "My mum has a job at the hospital." },
+  { word: "office", definition: "a room or building where people work", partOfSpeech: "noun", example: "He works in an office." },
+  { word: "salary", definition: "money you receive regularly for doing a job", partOfSpeech: "noun", example: "She earns a good salary." },
+  { word: "boss", definition: "the person in charge at work", partOfSpeech: "noun", example: "My boss is very nice." },
+  { word: "colleague", definition: "a person you work with", partOfSpeech: "noun", example: "She is my colleague." },
+  // Set 21: Miscellaneous Useful Words
+  { word: "perhaps", definition: "maybe; possibly", partOfSpeech: "adverb", example: "Perhaps we can go tomorrow." },
+  { word: "already", definition: "before now or before a particular time", partOfSpeech: "adverb", example: "I have already finished my homework." },
+  { word: "enough", definition: "as much as is needed", partOfSpeech: "determiner", example: "Do we have enough food?" },
+  { word: "several", definition: "more than two but not very many", partOfSpeech: "determiner", example: "I have several books about animals." },
+  { word: "probably", definition: "almost certainly; very likely", partOfSpeech: "adverb", example: "It will probably rain tomorrow." },
+  { word: "actually", definition: "in fact; really", partOfSpeech: "adverb", example: "I actually like math." },
+  { word: "quite", definition: "to a fairly large degree; rather", partOfSpeech: "adverb", example: "The test was quite difficult." },
+  { word: "prefer", definition: "to like one thing more than another", partOfSpeech: "verb", example: "I prefer tea to coffee." },
+  { word: "choose", definition: "to decide which one you want", partOfSpeech: "verb", example: "You can choose a present." },
+  { word: "opinion", definition: "what you think about something", partOfSpeech: "noun", example: "In my opinion, the film was great." },
+  // Set 22: More Useful Verbs & Adjectives
+  { word: "belong", definition: "to be the property of someone", partOfSpeech: "verb", example: "This book belongs to me." },
+  { word: "compare", definition: "to look at things to see how they are similar or different", partOfSpeech: "verb", example: "Let's compare these two pictures." },
+  { word: "depend", definition: "to be decided by something; to rely on", partOfSpeech: "verb", example: "It depends on the weather." },
+  { word: "ordinary", definition: "normal; not unusual or special", partOfSpeech: "adjective", example: "It was just an ordinary day." },
+  { word: "necessary", definition: "needed; that you must have or do", partOfSpeech: "adjective", example: "Water is necessary for life." },
+];
+
+
 
 
 export function getWordBank(type: WordBank): VocabWord[] {
   switch (type) {
     case "academic": return [...academicWords, ...advancedSchoolWords];
     case "beginner": return beginnerWords;
+    case "elementary": return elementaryWords;
     case "everyday": return everydayWords;
     case "intermediate": return intermediateWords;
     case "native": return nativeWords;
@@ -1671,6 +1909,7 @@ export function getRandomWords(type: WordBank, count: number = 10): VocabWord[] 
 const rolePrompts: Record<WordBank, { role: RoleType; label: string }> = {
   academic: { role: "examiner", label: "IELTS Examiner" },
   beginner: { role: "teacher", label: "Kind Teacher" },
+  elementary: { role: "teacher", label: "Friendly Guide" },
   everyday: { role: "local", label: "Native Friend" },
   intermediate: { role: "tutor", label: "School Tutor" },
   native: { role: "examiner", label: "Professional Peer" },
@@ -1695,6 +1934,13 @@ export function getScoreCategories(bank: WordBank): ScoreCategory[] {
         { key: "understanding", label: "Understanding", description: "Do you understand the question?" },
         { key: "confidence", label: "Confidence", description: "Do you try to answer without fear?" },
         { key: "effort", label: "Effort", description: "Are you trying your best?" },
+      ];
+    case "elementary":
+      return [
+        { key: "expression", label: "Expression", description: "Can you form simple sentences?" },
+        { key: "understanding", label: "Understanding", description: "Do you follow the conversation?" },
+        { key: "vocabulary_use", label: "Vocabulary Use", description: "Do you use new words correctly?" },
+        { key: "interaction", label: "Interaction", description: "Can you ask and answer questions?" },
       ];
     case "everyday":
       return [
