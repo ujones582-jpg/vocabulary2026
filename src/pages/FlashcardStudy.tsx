@@ -11,7 +11,7 @@ export default function FlashcardStudy() {
   const bank = (searchParams.get("bank") || "academic") as WordBank;
   const navigate = useNavigate();
 
-  const { markSeen, getStatus, counts, loading } = useWordStatus(bank);
+  const { markSeen, manualPromote, getStatus, counts, loading } = useWordStatus(bank);
 
   const [words, setWords] = useState(() => getRandomWords(bank, 10));
   const [currentIndex, setCurrentIndex] = useState(0);
