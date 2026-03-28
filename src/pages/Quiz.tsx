@@ -102,6 +102,7 @@ export default function Quiz() {
   const [results, setResults] = useState<(boolean | null)[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [showHint, setShowHint] = useState(false);
 
   if (questions.length > 0 && results.length === 0) {
     setResults(new Array(questions.length).fill(null));
