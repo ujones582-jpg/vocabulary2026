@@ -125,10 +125,19 @@ export default function ConversationPractice() {
       setFeedback(data?.feedback || null);
       setWordUsage(data?.wordUsage || null);
       if (user && data?.scores) {
+        // Save scores
         await supabase.from("conversation_scores").insert({
           user_id: user.id,
           bank,
           scores: data.scores,
+          rounds_completed: roundCount,
+        });
+        // Save conversation history
+        await supabase.from("conversation_history").insert({
+          user_id: user.id,
+          bank,
+          role_label: roleInfo.label,
+          messages: messages.map(m => ({ role: m.role, content: m.content })),
           rounds_completed: roundCount,
         });
       }
