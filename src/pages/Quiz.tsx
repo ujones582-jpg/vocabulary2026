@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, XCircle, ArrowRight, RotateCcw, MessageSquare, Keyboard } from "lucide-react";
 import type { WordBank, VocabWord } from "@/lib/vocabulary";
@@ -11,6 +11,7 @@ import WordStatusPortal from "@/components/WordStatusPortal";
 interface MCQQuestion {
   type: "mcq";
   word: string;
+  correctDefinition: string;
   options: { id: number; definition: string; isCorrect: boolean }[];
 }
 
@@ -23,16 +24,33 @@ interface SpellingQuestion {
 
 type QuizQuestion = MCQQuestion | SpellingQuestion;
 
+function buildQuestions(quizWords: VocabWord[], allWords: VocabWord[]): QuizQuestion[] {
+  return quizWords.map((w, idx) => {
+    if (idx % 2 === 0) {
+      const wrongWords = allWords.filter((aw) => aw.word !== w.word);
+      const shuffled = [...wrongWords].sort(() => Math.random() - 0.5).slice(0, 3);
+      const options = [
+        { id: 0, definition: w.definition, isCorrect: true },
+        ...shuffled.map((sw, i) => ({ id: i + 1, definition: sw.definition, isCorrect: false })),
+      ].sort(() => Math.random() - 0.5);
+      return { type: "mcq" as const, word: w.word, correctDefinition: w.definition, options };
+    } else {
+      return { type: "spelling" as const, definition: w.definition, partOfSpeech: w.partOfSpeech, answer: w.word };
+    }
+  });
+}
+
 export default function Quiz() {
   const [searchParams] = useSearchParams();
   const bank = (searchParams.get("bank") || "academic") as WordBank;
-  const source = searchParams.get("source"); // "errors" or null
+  const source = searchParams.get("source");
   const navigate = useNavigate();
   const { user } = useAuth();
-  const allWords = getWordBank(bank);
+  const allWords = useMemo(() => getWordBank(bank), [bank]);
   const { getQuizWords, getStatus, counts, recordQuizAnswer, loading } = useWordStatus(bank);
 
   const [quizWords, setQuizWords] = useState<VocabWord[]>([]);
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [initialized, setInitialized] = useState(false);
   const [noWords, setNoWords] = useState(false);
 
@@ -56,7 +74,9 @@ export default function Quiz() {
       if (matched.length === 0) {
         setNoWords(true);
       } else {
-        setQuizWords(matched.sort(() => Math.random() - 0.5).slice(0, 10));
+        const selected = matched.sort(() => Math.random() - 0.5).slice(0, 10);
+        setQuizWords(selected);
+        setQuestions(buildQuestions(selected, allWords));
       }
       setInitialized(true);
     };
@@ -66,27 +86,14 @@ export default function Quiz() {
   // Normal quiz init
   if (!loading && !initialized && source !== "errors") {
     const words = getQuizWords(10);
-    if (words.length === 0) setNoWords(true);
-    else setQuizWords(words);
+    if (words.length === 0) {
+      setNoWords(true);
+    } else {
+      setQuizWords(words);
+      setQuestions(buildQuestions(words, allWords));
+    }
     setInitialized(true);
   }
-
-  const questions = useMemo<QuizQuestion[]>(() => {
-    if (quizWords.length === 0) return [];
-    return quizWords.map((w, idx) => {
-      if (idx % 2 === 0) {
-        const wrongWords = allWords.filter((aw) => aw.word !== w.word);
-        const shuffled = [...wrongWords].sort(() => Math.random() - 0.5).slice(0, 3);
-        const options = [
-          { id: 0, definition: w.definition, isCorrect: true },
-          ...shuffled.map((sw, i) => ({ id: i + 1, definition: sw.definition, isCorrect: false })),
-        ].sort(() => Math.random() - 0.5);
-        return { type: "mcq" as const, word: w.word, options };
-      } else {
-        return { type: "spelling" as const, definition: w.definition, partOfSpeech: w.partOfSpeech, answer: w.word };
-      }
-    });
-  }, [quizWords, allWords]);
 
   const [currentQ, setCurrentQ] = useState(0);
   const [mcqSelected, setMcqSelected] = useState<number | null>(null);
@@ -103,6 +110,18 @@ export default function Quiz() {
   const correctCount = results.filter((r) => r === true).length;
   const incorrectCount = results.filter((r) => r === false).length;
 
+  // Save an incorrect answer to the error bank
+  const saveError = useCallback(async (word: string, userAnswer: string, correction: string) => {
+    if (!user) return;
+    await supabase.from("user_errors").insert({
+      user_id: user.id,
+      bank,
+      word,
+      user_sentence: userAnswer,
+      correction,
+    });
+  }, [user, bank]);
+
   const handleMCQSelect = useCallback(
     async (idx: number) => {
       if (showResult || !question || question.type !== "mcq") return;
@@ -111,8 +130,13 @@ export default function Quiz() {
       setResults((prev) => { const n = [...prev]; n[currentQ] = isCorrect; return n; });
       setShowResult(true);
       await recordQuizAnswer(question.word, "mcq", isCorrect);
+      if (!isCorrect) {
+        const chosenDef = question.options[idx].definition;
+        const correctDef = question.options.find(o => o.isCorrect)?.definition || "";
+        await saveError(question.word, `Chose: "${chosenDef}"`, `Correct: "${correctDef}"`);
+      }
     },
-    [showResult, question, currentQ, recordQuizAnswer]
+    [showResult, question, currentQ, recordQuizAnswer, saveError]
   );
 
   const handleSpellingSubmit = useCallback(async () => {
@@ -121,7 +145,10 @@ export default function Quiz() {
     setResults((prev) => { const n = [...prev]; n[currentQ] = isCorrect; return n; });
     setShowResult(true);
     await recordQuizAnswer(question.answer, "spelling", isCorrect);
-  }, [showResult, question, currentQ, spellingInput, recordQuizAnswer]);
+    if (!isCorrect) {
+      await saveError(question.answer, `Typed: "${spellingInput.trim()}"`, `Correct spelling: "${question.answer}"`);
+    }
+  }, [showResult, question, currentQ, spellingInput, recordQuizAnswer, saveError]);
 
   const handleNext = useCallback(() => {
     setMcqSelected(null);
@@ -137,6 +164,7 @@ export default function Quiz() {
     } else {
       const words = getQuizWords(10);
       setQuizWords(words);
+      setQuestions(buildQuestions(words, allWords));
     }
     setCurrentQ(0);
     setMcqSelected(null);

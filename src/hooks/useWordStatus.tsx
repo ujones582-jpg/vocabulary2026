@@ -12,6 +12,7 @@ export interface WordStatusRecord {
   mcq_correct_streak: number;
   spelling_correct_streak: number;
   ai_chat_used: boolean;
+  last_quizzed_at: string | null;
 }
 
 export function useWordStatus(bank: WordBank, extraWords?: VocabWord[]) {
@@ -25,7 +26,7 @@ export function useWordStatus(bank: WordBank, extraWords?: VocabWord[]) {
     if (!user) return;
     const { data } = await supabase
       .from("word_status")
-      .select("word, status, mcq_correct_streak, spelling_correct_streak, ai_chat_used")
+      .select("word, status, mcq_correct_streak, spelling_correct_streak, ai_chat_used, last_quizzed_at")
       .eq("user_id", user.id)
       .eq("bank", bank);
 
@@ -38,6 +39,7 @@ export function useWordStatus(bank: WordBank, extraWords?: VocabWord[]) {
           mcq_correct_streak: row.mcq_correct_streak,
           spelling_correct_streak: row.spelling_correct_streak,
           ai_chat_used: row.ai_chat_used,
+          last_quizzed_at: row.last_quizzed_at,
         });
       }
     }
@@ -76,7 +78,7 @@ export function useWordStatus(bank: WordBank, extraWords?: VocabWord[]) {
 
       setStatuses((prev) => {
         const next = new Map(prev);
-        next.set(word, { word, status: "seen", mcq_correct_streak: 0, spelling_correct_streak: 0, ai_chat_used: false });
+        next.set(word, { word, status: "seen", mcq_correct_streak: 0, spelling_correct_streak: 0, ai_chat_used: false, last_quizzed_at: null });
         return next;
       });
     },
@@ -108,6 +110,7 @@ export function useWordStatus(bank: WordBank, extraWords?: VocabWord[]) {
           mcq_correct_streak: record.mcq_correct_streak,
           spelling_correct_streak: record.spelling_correct_streak,
           ai_chat_used: record.ai_chat_used,
+          last_quizzed_at: current?.last_quizzed_at || null,
         });
         return next;
       });
@@ -124,6 +127,7 @@ export function useWordStatus(bank: WordBank, extraWords?: VocabWord[]) {
         mcq_correct_streak: 0,
         spelling_correct_streak: 0,
         ai_chat_used: false,
+        last_quizzed_at: null,
       };
 
       let mcq = current.mcq_correct_streak;
@@ -148,6 +152,7 @@ export function useWordStatus(bank: WordBank, extraWords?: VocabWord[]) {
         if ((current.status === "learnt" || newStatus === "learnt") && (mcq >= 3 || current.ai_chat_used)) newStatus = "mastered";
       }
 
+      const now = new Date().toISOString();
       const record = {
         user_id: user.id,
         bank,
@@ -156,14 +161,15 @@ export function useWordStatus(bank: WordBank, extraWords?: VocabWord[]) {
         mcq_correct_streak: mcq,
         spelling_correct_streak: spelling,
         ai_chat_used: current.ai_chat_used,
-        updated_at: new Date().toISOString(),
+        updated_at: now,
+        last_quizzed_at: now,
       };
 
       await supabase.from("word_status").upsert(record, { onConflict: "user_id,bank,word" });
 
       setStatuses((prev) => {
         const next = new Map(prev);
-        next.set(word, { word, status: newStatus, mcq_correct_streak: mcq, spelling_correct_streak: spelling, ai_chat_used: current.ai_chat_used });
+        next.set(word, { word, status: newStatus, mcq_correct_streak: mcq, spelling_correct_streak: spelling, ai_chat_used: current.ai_chat_used, last_quizzed_at: now });
         return next;
       });
     },
@@ -210,25 +216,45 @@ export function useWordStatus(bank: WordBank, extraWords?: VocabWord[]) {
       const learntWords = getWordsByStatus("learnt");
       const masteredWords = getWordsByStatus("mastered");
 
-      const allQuizzable = [...seenWords, ...developingWords];
+      // All quizzable words with spaced repetition weighting
+      const candidates = [...seenWords, ...developingWords, ...learntWords, ...masteredWords];
+      if (candidates.length === 0) return [];
 
-      if (learntWords.length >= 5) {
-        const total = seenWords.length + developingWords.length + learntWords.length + masteredWords.length;
-        const learntCount = Math.max(1, Math.floor(count * (learntWords.length / total)));
-        const shuffledLearnt = [...learntWords].sort(() => Math.random() - 0.5);
-        allQuizzable.push(...shuffledLearnt.slice(0, learntCount));
-      }
+      const now = Date.now();
 
-      if (masteredWords.length >= 5) {
-        const masteredCount = Math.max(1, Math.floor(count * 0.1));
-        const shuffledMastered = [...masteredWords].sort(() => Math.random() - 0.5);
-        allQuizzable.push(...shuffledMastered.slice(0, masteredCount));
-      }
+      const weighted = candidates.map((w) => {
+        const record = statuses.get(w.word);
+        const status = record?.status || "seen";
+        const lastQuizzed = record?.last_quizzed_at ? new Date(record.last_quizzed_at).getTime() : 0;
 
-      const uniqueWords = Array.from(new Map(allQuizzable.map((w) => [w.word, w])).values());
-      return uniqueWords.sort(() => Math.random() - 0.5).slice(0, count);
+        // Hours since last quiz (never quizzed = 9999)
+        const hoursSince = lastQuizzed ? (now - lastQuizzed) / (1000 * 60 * 60) : 9999;
+
+        // Status weight: lower status = higher priority
+        const statusWeight: Record<string, number> = {
+          seen: 4,
+          developing: 3,
+          learnt: 1.5,
+          mastered: 0.5,
+        };
+
+        // Score = status importance × time decay
+        // Words not quizzed recently get boosted
+        const score = (statusWeight[status] || 1) * Math.min(hoursSince, 168); // cap at 1 week
+
+        return { word: w, score };
+      });
+
+      // Sort by score descending (highest priority first), then add jitter
+      weighted.sort((a, b) => b.score - a.score);
+
+      // Take top 2× candidates, then shuffle to add variety
+      const pool = weighted.slice(0, count * 2).map(w => w.word);
+      const shuffled = pool.sort(() => Math.random() - 0.5);
+
+      return shuffled.slice(0, count);
     },
-    [getWordsByStatus]
+    [getWordsByStatus, statuses]
   );
 
   const counts = {
