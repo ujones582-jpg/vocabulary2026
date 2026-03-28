@@ -12,6 +12,7 @@ import Quiz from "./pages/Quiz";
 import ConversationPractice from "./pages/ConversationPractice";
 import ErrorBank from "./pages/ErrorBank";
 import Settings from "./pages/Settings";
+import ChatHistory from "./pages/ChatHistory";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
