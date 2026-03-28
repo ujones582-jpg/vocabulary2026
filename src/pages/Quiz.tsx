@@ -36,7 +36,7 @@ function buildQuestions(quizWords: VocabWord[], allWords: VocabWord[]): QuizQues
       ].sort(() => Math.random() - 0.5);
       return { type: "mcq" as const, word: w.word, correctDefinition: w.definition, options };
     } else {
-      return { type: "spelling" as const, definition: w.definition, partOfSpeech: w.partOfSpeech, answer: w.word };
+      return { type: "spelling" as const, definition: w.definition, partOfSpeech: w.partOfSpeech, answer: w.word, example: w.example };
     }
   });
 }
