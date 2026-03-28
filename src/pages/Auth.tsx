@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { BookOpen, Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Auth() {
@@ -34,11 +34,7 @@ export default function Auth() {
         });
       }
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message,
-      });
+      toast({ variant: "destructive", title: "Error", description: error.message });
     } finally {
       setLoading(false);
     }
@@ -46,18 +42,18 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-5 max-w-md mx-auto">
-      <div className="w-full opacity-0 animate-fade-up">
-        <div className="flex items-center gap-2 mb-6 justify-center">
-          <BookOpen className="w-6 h-6 text-primary" />
-          <span className="text-lg font-bold text-foreground">Vocabulary Master</span>
+      <div className="w-full">
+        <div className="mb-8 text-center">
+          <h1 className="font-display text-3xl text-foreground mb-1">Vocabulary</h1>
+          <p className="text-sm text-muted-foreground">Learn words through context, not rote memorization.</p>
         </div>
 
-        <div className="bg-card rounded-xl p-6 card-shadow">
-          <h1 className="text-xl font-bold text-foreground mb-1 text-center">
+        <div className="bg-card rounded-xl p-6 border border-border">
+          <h2 className="font-display text-xl text-foreground mb-1 text-center">
             {isLogin ? "Welcome back" : "Create account"}
-          </h1>
+          </h2>
           <p className="text-sm text-muted-foreground text-center mb-6">
-            {isLogin ? "Sign in to continue learning" : "Start your vocabulary journey"}
+            {isLogin ? "Sign in to continue" : "Get started for free"}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -14,14 +14,13 @@ export interface WordStatusRecord {
   ai_chat_used: boolean;
 }
 
-export function useWordStatus(bank: WordBank) {
+export function useWordStatus(bank: WordBank, extraWords?: VocabWord[]) {
   const { user } = useAuth();
   const [statuses, setStatuses] = useState<Map<string, WordStatusRecord>>(new Map());
   const [loading, setLoading] = useState(true);
 
-  const allWords = getWordBank(bank);
+  const allWords = [...getWordBank(bank), ...(extraWords || [])];
 
-  // Fetch all statuses for this bank
   const fetchStatuses = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
@@ -55,7 +54,6 @@ export function useWordStatus(bank: WordBank) {
     [statuses]
   );
 
-  // Mark a word as seen (only if unseen)
   const markSeen = useCallback(
     async (word: string) => {
       if (!user) return;
@@ -78,12 +76,38 @@ export function useWordStatus(bank: WordBank) {
 
       setStatuses((prev) => {
         const next = new Map(prev);
+        next.set(word, { word, status: "seen", mcq_correct_streak: 0, spelling_correct_streak: 0, ai_chat_used: false });
+        return next;
+      });
+    },
+    [user, bank, statuses]
+  );
+
+  const manualPromote = useCallback(
+    async (word: string, targetStatus: WordStatusLevel) => {
+      if (!user) return;
+      const current = statuses.get(word);
+      const record = {
+        user_id: user.id,
+        bank,
+        word,
+        status: targetStatus,
+        mcq_correct_streak: current?.mcq_correct_streak || 0,
+        spelling_correct_streak: current?.spelling_correct_streak || 0,
+        ai_chat_used: current?.ai_chat_used || false,
+        updated_at: new Date().toISOString(),
+      };
+
+      await supabase.from("word_status").upsert(record, { onConflict: "user_id,bank,word" });
+
+      setStatuses((prev) => {
+        const next = new Map(prev);
         next.set(word, {
           word,
-          status: "seen",
-          mcq_correct_streak: 0,
-          spelling_correct_streak: 0,
-          ai_chat_used: false,
+          status: targetStatus,
+          mcq_correct_streak: record.mcq_correct_streak,
+          spelling_correct_streak: record.spelling_correct_streak,
+          ai_chat_used: record.ai_chat_used,
         });
         return next;
       });
@@ -91,7 +115,6 @@ export function useWordStatus(bank: WordBank) {
     [user, bank, statuses]
   );
 
-  // Record a quiz answer and update status
   const recordQuizAnswer = useCallback(
     async (word: string, questionType: "mcq" | "spelling", correct: boolean) => {
       if (!user) return;
@@ -114,30 +137,15 @@ export function useWordStatus(bank: WordBank) {
         else spelling = Math.max(0, spelling - 1);
       }
 
-      // Determine new status
       let newStatus: WordStatusLevel = current.status;
 
       if (!correct) {
-        // Demote: mastered → learnt, learnt → developing
-        if (current.status === "mastered") {
-          newStatus = "learnt";
-        } else if (current.status === "learnt") {
-          newStatus = "developing";
-        }
+        if (current.status === "mastered") newStatus = "learnt";
+        else if (current.status === "learnt") newStatus = "developing";
       } else {
-        // Promote logic (cumulative)
-        // seen → developing: at least 1 correct answer
-        if (current.status === "seen") {
-          newStatus = "developing";
-        }
-        // developing → learnt: 2 MCQ + 2 spelling cumulative
-        if ((current.status === "developing" || newStatus === "developing") && mcq >= 2 && spelling >= 2) {
-          newStatus = "learnt";
-        }
-        // learnt → mastered: 3 MCQ total OR ai chat used
-        if ((current.status === "learnt" || newStatus === "learnt") && (mcq >= 3 || current.ai_chat_used)) {
-          newStatus = "mastered";
-        }
+        if (current.status === "seen") newStatus = "developing";
+        if ((current.status === "developing" || newStatus === "developing") && mcq >= 2 && spelling >= 2) newStatus = "learnt";
+        if ((current.status === "learnt" || newStatus === "learnt") && (mcq >= 3 || current.ai_chat_used)) newStatus = "mastered";
       }
 
       const record = {
@@ -155,35 +163,21 @@ export function useWordStatus(bank: WordBank) {
 
       setStatuses((prev) => {
         const next = new Map(prev);
-        next.set(word, {
-          word,
-          status: newStatus,
-          mcq_correct_streak: mcq,
-          spelling_correct_streak: spelling,
-          ai_chat_used: current.ai_chat_used,
-        });
+        next.set(word, { word, status: newStatus, mcq_correct_streak: mcq, spelling_correct_streak: spelling, ai_chat_used: current.ai_chat_used });
         return next;
       });
     },
     [user, bank, statuses]
   );
 
-  // Mark AI chat used for a word
   const markAiChatUsed = useCallback(
     async (word: string) => {
       if (!user) return;
       const current = statuses.get(word);
       if (!current) return;
 
-      const update: any = {
-        ai_chat_used: true,
-        updated_at: new Date().toISOString(),
-      };
-
-      // AI chat used alone is enough for mastery (if learnt)
-      if (current.status === "learnt") {
-        update.status = "mastered";
-      }
+      const update: any = { ai_chat_used: true, updated_at: new Date().toISOString() };
+      if (current.status === "learnt") update.status = "mastered";
 
       await supabase
         .from("word_status")
@@ -195,18 +189,13 @@ export function useWordStatus(bank: WordBank) {
       setStatuses((prev) => {
         const next = new Map(prev);
         const existing = next.get(word)!;
-        next.set(word, {
-          ...existing,
-          ai_chat_used: true,
-          status: update.status || existing.status,
-        });
+        next.set(word, { ...existing, ai_chat_used: true, status: update.status || existing.status });
         return next;
       });
     },
     [user, bank, statuses]
   );
 
-  // Get words by status
   const getWordsByStatus = useCallback(
     (status: WordStatusLevel): VocabWord[] => {
       return allWords.filter((w) => getStatus(w.word) === status);
@@ -214,7 +203,6 @@ export function useWordStatus(bank: WordBank) {
     [allWords, getStatus]
   );
 
-  // Get quizzable words (seen + developing + learnt + mastered, with gradual inclusion)
   const getQuizWords = useCallback(
     (count: number): VocabWord[] => {
       const seenWords = getWordsByStatus("seen");
@@ -222,10 +210,8 @@ export function useWordStatus(bank: WordBank) {
       const learntWords = getWordsByStatus("learnt");
       const masteredWords = getWordsByStatus("mastered");
 
-      // Seen and developing are always quizzable
       const allQuizzable = [...seenWords, ...developingWords];
 
-      // After 5 learnt words, start including them
       if (learntWords.length >= 5) {
         const total = seenWords.length + developingWords.length + learntWords.length + masteredWords.length;
         const learntCount = Math.max(1, Math.floor(count * (learntWords.length / total)));
@@ -233,17 +219,13 @@ export function useWordStatus(bank: WordBank) {
         allQuizzable.push(...shuffledLearnt.slice(0, learntCount));
       }
 
-      // After 5 mastered words, start including them sporadically
       if (masteredWords.length >= 5) {
         const masteredCount = Math.max(1, Math.floor(count * 0.1));
         const shuffledMastered = [...masteredWords].sort(() => Math.random() - 0.5);
         allQuizzable.push(...shuffledMastered.slice(0, masteredCount));
       }
 
-      // Deduplicate
       const uniqueWords = Array.from(new Map(allQuizzable.map((w) => [w.word, w])).values());
-
-      // Shuffle and take count
       return uniqueWords.sort(() => Math.random() - 0.5).slice(0, count);
     },
     [getWordsByStatus]
@@ -262,6 +244,7 @@ export function useWordStatus(bank: WordBank) {
     loading,
     getStatus,
     markSeen,
+    manualPromote,
     recordQuizAnswer,
     markAiChatUsed,
     getWordsByStatus,

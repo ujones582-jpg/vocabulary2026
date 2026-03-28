@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { WordBank } from "@/lib/vocabulary";
-import { BookOpen, GraduationCap, Plane, Sprout, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreference } from "@/hooks/useUserPreference";
 
 const banks = [
-  { id: "beginner" as WordBank, icon: Sprout, label: "Beginner EFL", desc: "Start from zero — no English needed!", emoji: "🌱" },
-  { id: "intermediate" as WordBank, icon: BookOpen, label: "Upper Primary & Middle School", desc: "Grades 4–8 · Reading · Science · Social Studies", emoji: "📚" },
-  { id: "everyday" as WordBank, icon: Plane, label: "Everyday Conversational", desc: "Travel · Idioms · Phone calls", emoji: "✈️" },
-  { id: "academic" as WordBank, icon: GraduationCap, label: "Advanced Academic", desc: "TOEFL · IELTS · SAT", emoji: "🎓" },
+  { id: "beginner" as WordBank, label: "Beginner EFL", desc: "Start from zero — no English needed", tag: "A1" },
+  { id: "intermediate" as WordBank, label: "Upper Primary & Middle School", desc: "Grades 4–8 · Reading · Science · Social Studies", tag: "B1" },
+  { id: "everyday" as WordBank, label: "Everyday Conversational", desc: "Travel · Idioms · Phone calls", tag: "B2" },
+  { id: "academic" as WordBank, label: "Advanced Academic", desc: "TOEFL · IELTS · SAT", tag: "C1" },
 ];
 
 export default function WordBankSelection() {
@@ -29,38 +29,36 @@ export default function WordBankSelection() {
 
   return (
     <div className="min-h-screen flex flex-col px-5 py-8 max-w-md mx-auto">
-      <div className="opacity-0 animate-fade-up" style={{ animationDelay: "0ms" }}>
-        <div className="flex items-center gap-2 mb-1">
-          <BookOpen className="w-5 h-5 text-primary" />
-          <span className="text-sm font-medium text-muted-foreground tracking-wide uppercase">Vocabulary Master</span>
-        </div>
-        <h1 className="text-2xl font-bold text-foreground leading-tight">
-          Choose your<br />word bank
+      <div>
+        <p className="text-xs font-medium text-muted-foreground tracking-wide uppercase mb-1">Vocabulary</p>
+        <h1 className="font-display text-2xl text-foreground leading-tight">
+          Pick a word bank
         </h1>
         <p className="text-muted-foreground text-sm mt-2">
-          Learn words through flashcards, quizzes, and AI conversations.
+          Choose a level that matches where you are right now.
         </p>
       </div>
 
-      <div className="flex-1 flex flex-col gap-3 mt-8">
-        {banks.map((bank, i) => {
+      <div className="flex-1 flex flex-col gap-2.5 mt-8">
+        {banks.map((bank) => {
           const active = selected === bank.id;
           return (
             <button
               key={bank.id}
               onClick={() => setSelected(bank.id)}
-              className={`opacity-0 animate-fade-up relative w-full text-left rounded-lg p-5 transition-all duration-200 card-shadow
-                ${active ? "bg-primary ring-2 ring-primary" : "bg-card hover:card-shadow-hover"} active:scale-[0.97]`}
-              style={{ animationDelay: `${100 + i * 80}ms` }}
+              className={`relative w-full text-left rounded-lg p-4 transition-all border
+                ${active ? "bg-primary border-primary text-primary-foreground" : "bg-card border-border hover:border-foreground/15"} active:scale-[0.98]`}
             >
-              <div className="flex items-start gap-4">
-                <span className="text-2xl">{bank.emoji}</span>
+              <div className="flex items-start gap-3">
+                <span className={`text-xs font-bold px-2 py-0.5 rounded ${active ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+                  {bank.tag}
+                </span>
                 <div className="flex-1 min-w-0">
-                  <p className={`font-semibold text-base ${active ? "text-primary-foreground" : "text-foreground"}`}>{bank.label}</p>
-                  <p className={`text-sm mt-0.5 ${active ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{bank.desc}</p>
+                  <p className={`font-semibold text-sm ${active ? "text-primary-foreground" : "text-foreground"}`}>{bank.label}</p>
+                  <p className={`text-xs mt-0.5 ${active ? "text-primary-foreground/70" : "text-muted-foreground"}`}>{bank.desc}</p>
                 </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${active ? "border-primary-foreground bg-primary-foreground" : "border-muted-foreground/30"}`}>
-                  {active && <div className="w-2.5 h-2.5 rounded-full bg-primary" />}
+                <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${active ? "border-primary-foreground bg-primary-foreground" : "border-muted-foreground/30"}`}>
+                  {active && <div className="w-2 h-2 rounded-full bg-primary" />}
                 </div>
               </div>
             </button>
@@ -68,13 +66,13 @@ export default function WordBankSelection() {
         })}
       </div>
 
-      <div className="pt-6 space-y-3 opacity-0 animate-fade-up" style={{ animationDelay: "400ms" }}>
+      <div className="pt-6 space-y-3">
         <button
           disabled={!selected || saving}
           onClick={handleStart}
-          className={`w-full py-4 rounded-lg font-semibold text-base transition-all duration-200 active:scale-[0.97] ${selected ? "bg-primary text-primary-foreground card-shadow" : "bg-muted text-muted-foreground cursor-not-allowed"}`}
+          className={`w-full py-3.5 rounded-lg font-semibold text-sm transition-all active:scale-[0.97] ${selected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground cursor-not-allowed"}`}
         >
-          {saving ? "Saving…" : "Start Learning"}
+          {saving ? "Saving…" : "Continue"}
         </button>
         <button
           onClick={async () => { await signOut(); navigate("/auth"); }}
