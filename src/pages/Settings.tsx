@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, LogOut } from "lucide-react";
+import { ArrowLeft, LogOut, Sparkles } from "lucide-react";
 import type { WordBank } from "@/lib/vocabulary";
 import { useUserPreference } from "@/hooks/useUserPreference";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import PlacementAssessment from "@/components/PlacementAssessment";
 
 const banks: { id: WordBank; label: string; tag: string }[] = [
   { id: "beginner", label: "Beginner EFL", tag: "A1" },
@@ -19,6 +20,7 @@ export default function Settings() {
   const { signOut } = useAuth();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [showAssessment, setShowAssessment] = useState(false);
 
   const handleBankSelect = async (b: WordBank) => {
     if (b === currentBank || saving) return;
