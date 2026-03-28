@@ -51,7 +51,7 @@ function scoreToBankFromTest(testId: string, score: number): WordBank {
   for (const t of test.thresholds) {
     if (score < t.cutoff) return t.bank;
   }
-  return "academic";
+  return "native";
 }
 
 function computeRecommendation(
