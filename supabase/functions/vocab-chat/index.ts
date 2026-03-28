@@ -247,6 +247,13 @@ Respond in this exact JSON format and nothing else:
       } catch {
         result = { scores: {} };
       }
+    } else if (type === "define_word") {
+      try {
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        result = jsonMatch ? JSON.parse(jsonMatch[0]) : { definition: content, partOfSpeech: "unknown", example: "" };
+      } catch {
+        result = { definition: content, partOfSpeech: "unknown", example: "" };
+      }
     } else {
       result = { scene: content };
     }
