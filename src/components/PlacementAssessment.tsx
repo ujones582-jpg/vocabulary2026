@@ -5,24 +5,27 @@ import type { WordBank } from "@/lib/vocabulary";
 /* ── Assessment config ─────────────────────────────────────── */
 
 const standardizedTests = [
-  { id: "toefl", label: "TOEFL", scoreRanges: [
-    { label: "Below 40", value: 30, bank: "beginner" as WordBank },
-    { label: "40–60", value: 50, bank: "intermediate" as WordBank },
-    { label: "61–90", value: 75, bank: "everyday" as WordBank },
-    { label: "91–120", value: 105, bank: "academic" as WordBank },
-  ]},
-  { id: "ielts", label: "IELTS", scoreRanges: [
-    { label: "Below 4.0", value: 3, bank: "beginner" as WordBank },
-    { label: "4.0–5.5", value: 4.5, bank: "intermediate" as WordBank },
-    { label: "6.0–7.0", value: 6.5, bank: "everyday" as WordBank },
-    { label: "7.5–9.0", value: 8, bank: "academic" as WordBank },
-  ]},
-  { id: "sat", label: "SAT (Reading & Writing)", scoreRanges: [
-    { label: "Below 400", value: 350, bank: "beginner" as WordBank },
-    { label: "400–530", value: 465, bank: "intermediate" as WordBank },
-    { label: "530–650", value: 590, bank: "everyday" as WordBank },
-    { label: "650–800", value: 725, bank: "academic" as WordBank },
-  ]},
+  { id: "toefl", label: "TOEFL", min: 0, max: 120, placeholder: "0–120",
+    thresholds: [
+      { cutoff: 40, bank: "beginner" as WordBank },
+      { cutoff: 61, bank: "intermediate" as WordBank },
+      { cutoff: 91, bank: "everyday" as WordBank },
+      { cutoff: 121, bank: "academic" as WordBank },
+    ]},
+  { id: "ielts", label: "IELTS", min: 0, max: 9, placeholder: "0–9", step: 0.5,
+    thresholds: [
+      { cutoff: 4, bank: "beginner" as WordBank },
+      { cutoff: 6, bank: "intermediate" as WordBank },
+      { cutoff: 7.5, bank: "everyday" as WordBank },
+      { cutoff: 10, bank: "academic" as WordBank },
+    ]},
+  { id: "sat", label: "SAT (Reading & Writing)", min: 200, max: 800, placeholder: "200–800",
+    thresholds: [
+      { cutoff: 400, bank: "beginner" as WordBank },
+      { cutoff: 530, bank: "intermediate" as WordBank },
+      { cutoff: 650, bank: "everyday" as WordBank },
+      { cutoff: 801, bank: "academic" as WordBank },
+    ]},
 ];
 
 const vocabQuizWords: { word: string; definition: string; level: WordBank; fakeDefinitions: string[] }[] = [
