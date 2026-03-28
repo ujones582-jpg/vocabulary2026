@@ -125,7 +125,7 @@ function computeRecommendation(
 
   quizQuestions.forEach((w, i) => {
     if (vocabCorrect[i]) {
-      const levelOrder: WordBank[] = ["beginner", "intermediate", "everyday", "academic", "native"];
+      const levelOrder: WordBank[] = ["beginner", "elementary", "intermediate", "everyday", "academic", "native"];
       const idx = levelOrder.indexOf(w.level);
       if (idx < 4) scores[levelOrder[idx + 1]] += 1;
       else scores[w.level] += 1;
