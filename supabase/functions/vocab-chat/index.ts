@@ -45,6 +45,14 @@ Be articulate but not pretentious. Engage genuinely with ideas.`,
       };
 
       systemPrompt = bankPersona[bank] || bankPersona.academic;
+
+      // Add topic/scenario context
+      if (topicPrompt && topicType === "scenario") {
+        systemPrompt += `\n\nIMPORTANT SCENARIO: ${topicPrompt}\nStay in this role-play scenario throughout the conversation. Start by setting the scene naturally.`;
+      } else if (topicPrompt && topicType === "topic") {
+        systemPrompt += `\n\nFocus the conversation on this topic: ${topicPrompt}\nStart by bringing up this topic naturally in your opening.`;
+      }
+
       messages = [
         { role: "system", content: systemPrompt + "\n\nGenerate ONLY your opening message. Keep it natural and concise (2-4 sentences max)." },
         { role: "user", content: "Start the conversation." },
