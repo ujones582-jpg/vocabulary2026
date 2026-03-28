@@ -1,3 +1,1 @@
-# Welcome to your Lovable project
-
-TODO: Document your project here
+This is a developed project aimed for improving students' English skills and to prepare thwem for infinite challenges that lay ahead.
