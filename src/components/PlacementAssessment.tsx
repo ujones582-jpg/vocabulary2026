@@ -37,6 +37,7 @@ const vocabQuizWords: { word: string; definition: string; level: WordBank; fakeD
   { word: "elaborate", definition: "involving many carefully arranged parts or details", level: "everyday", fakeDefinitions: ["to destroy completely", "very small in size", "related to electricity"] },
   { word: "ubiquitous", definition: "present, appearing, or found everywhere", level: "academic", fakeDefinitions: ["extremely rare", "related to underwater life", "having a strong smell"] },
   { word: "pragmatic", definition: "dealing with things sensibly and realistically", level: "academic", fakeDefinitions: ["overly dramatic", "relating to grammar rules", "very old-fashioned"] },
+  { word: "equanimity", definition: "mental calmness and composure, especially in a difficult situation", level: "native", fakeDefinitions: ["physical balance and coordination", "fairness in legal proceedings", "equality between groups"] },
 ];
 
 type Step = "tests" | "vocab" | "result";
