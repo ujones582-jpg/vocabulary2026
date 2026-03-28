@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, RotateCcw, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, RotateCcw, CheckCircle2, Zap } from "lucide-react";
 import type { WordBank } from "@/lib/vocabulary";
 import { getRandomWords } from "@/lib/vocabulary";
 import { useWordStatus } from "@/hooks/useWordStatus";
