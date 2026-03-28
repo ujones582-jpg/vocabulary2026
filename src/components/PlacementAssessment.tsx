@@ -61,7 +61,7 @@ function computeRecommendation(
   testEntries: { testId: string; score: number }[],
   vocabCorrect: boolean[],
 ): WordBank {
-  const scores: Record<WordBank, number> = { beginner: 0, intermediate: 0, everyday: 0, academic: 0 };
+  const scores: Record<WordBank, number> = { beginner: 0, intermediate: 0, everyday: 0, academic: 0, native: 0 };
 
   testEntries.forEach(({ testId, score }) => {
     const bank = scoreToBankFromTest(testId, score);
