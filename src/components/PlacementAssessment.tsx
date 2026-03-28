@@ -144,9 +144,10 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
   const [selectedTests, setSelectedTests] = useState<string[]>([]);
   const [testScores, setTestScores] = useState<Record<string, number>>({});
 
-  // Vocab quiz state
+  // Vocab quiz state — pick fresh random questions each mount
+  const [quizQuestions] = useState<VocabQuestion[]>(() => pickQuizQuestions());
   const [vocabIdx, setVocabIdx] = useState(0);
-  const [vocabAnswers, setVocabAnswers] = useState<(number | null)[]>(Array(vocabQuizWords.length).fill(null));
+  const [vocabAnswers, setVocabAnswers] = useState<(number | null)[]>(Array(6).fill(null));
   const [vocabRevealed, setVocabRevealed] = useState(false);
 
   // Result
