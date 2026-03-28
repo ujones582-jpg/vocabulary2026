@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const banks: { id: WordBank; label: string; emoji: string }[] = [
   { id: "beginner", label: "Beginner EFL", emoji: "🌱" },
-  { id: "intermediate", label: "Intermediate School", emoji: "📚" },
+  { id: "intermediate", label: "Upper Primary & Middle School", emoji: "📚" },
   { id: "everyday", label: "Everyday Conversational", emoji: "✈️" },
   { id: "academic", label: "Advanced Academic", emoji: "🎓" },
 ];
