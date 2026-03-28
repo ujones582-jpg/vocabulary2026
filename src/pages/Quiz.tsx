@@ -20,6 +20,7 @@ interface SpellingQuestion {
   definition: string;
   partOfSpeech: string;
   answer: string;
+  example?: string;
 }
 
 type QuizQuestion = MCQQuestion | SpellingQuestion;
@@ -35,7 +36,7 @@ function buildQuestions(quizWords: VocabWord[], allWords: VocabWord[]): QuizQues
       ].sort(() => Math.random() - 0.5);
       return { type: "mcq" as const, word: w.word, correctDefinition: w.definition, options };
     } else {
-      return { type: "spelling" as const, definition: w.definition, partOfSpeech: w.partOfSpeech, answer: w.word };
+      return { type: "spelling" as const, definition: w.definition, partOfSpeech: w.partOfSpeech, answer: w.word, example: w.example };
     }
   });
 }
@@ -332,6 +333,22 @@ export default function Quiz() {
               </div>
               <p className="text-base font-medium text-foreground leading-relaxed mb-2">{question.definition}</p>
               <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">{question.partOfSpeech}</span>
+
+              {/* Letter hint */}
+              <div className="mt-4 flex items-center gap-1.5">
+                <span className="text-sm font-bold text-primary">{question.answer[0].toUpperCase()}</span>
+                {Array.from({ length: question.answer.length - 1 }).map((_, i) => (
+                  <span key={i} className="w-3.5 h-0.5 bg-muted-foreground/30 rounded-full" />
+                ))}
+                <span className="text-xs text-muted-foreground ml-2">({question.answer.length} letters)</span>
+              </div>
+
+              {/* Example sentence hint */}
+              {question.example && (
+                <p className="mt-3 text-sm text-muted-foreground italic leading-relaxed">
+                  &ldquo;{question.example.replace(new RegExp(question.answer, "gi"), "______")}&rdquo;
+                </p>
+              )}
             </div>
 
             <div className="flex-1 flex flex-col justify-center">
