@@ -175,22 +175,34 @@ Imagine you're a native friend rating how enjoyable this conversation was.`,
 Score strictly as an IELTS examiner would.`,
       };
 
-      systemPrompt = `You are an English language assessor. Score this student's conversation performance.
+      systemPrompt = `You are an English language assessor. Score this student's conversation performance AND provide detailed feedback.
 
 ${bankInstructions[bank] || bankInstructions.academic}
 
-Score each category from 1-10. Respond in this exact JSON format:
+You must respond in this exact JSON format:
 {
   "scores": {
     ${(categories || []).map((c: string) => `"${c}": <number 1-10>`).join(",\n    ")}
+  },
+  "feedback": {
+    "strengths": ["<specific thing the student did well>", "<another strength>"],
+    "improvements": ["<specific area to improve with actionable advice>", "<another improvement>"],
+    "summary": "<2-3 sentence overall assessment of performance>"
+  },
+  "wordUsage": {
+    "impressiveWords": ["<advanced or notable words the student used effectively>"],
+    "wordsToTry": ["<3-5 useful words the student could have used in this conversation but didn't>"]
   }
 }
+
+For "impressiveWords", list words the STUDENT (not the AI) used that show good vocabulary — even simple words count for beginners.
+For "wordsToTry", suggest words that would have fit naturally in this conversation's context.
 
 Respond with ONLY the JSON, nothing else.`;
 
       messages = [
         { role: "system", content: systemPrompt },
-        { role: "user", content: `Here is the conversation log (${roundCount} rounds):\n\n${conversationLog}\n\nScore the student's performance across: ${categoryList}` },
+        { role: "user", content: `Here is the conversation log (${roundCount} rounds):\n\n${conversationLog}\n\nScore the student's performance across: ${categoryList}. Also provide detailed feedback and word usage analysis.` },
       ];
 
     } else if (type === "define_word") {
