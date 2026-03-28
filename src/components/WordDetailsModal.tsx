@@ -88,11 +88,11 @@ export default function WordDetailsModal({ open, onClose, words, getStatus, coun
 
       {/* Word list */}
       <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
-        {filtered.map((w) => {
+        {filtered.map((w, i) => {
           const cfg = statusConfig[w.status];
           const Icon = cfg.icon;
           return (
-            <div key={w.word} className="bg-card rounded-lg p-3 card-shadow">
+            <div key={`${w.word}-${i}`} className="bg-card rounded-lg p-3 card-shadow">
               <div className="flex items-center gap-2 mb-1">
                 <Icon className={`w-4 h-4 shrink-0 ${cfg.colorClass}`} />
                 <span className="text-sm font-bold text-foreground flex-1">{w.word}</span>
