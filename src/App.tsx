@@ -11,6 +11,7 @@ import FlashcardStudy from "./pages/FlashcardStudy";
 import Quiz from "./pages/Quiz";
 import ConversationPractice from "./pages/ConversationPractice";
 import ErrorBank from "./pages/ErrorBank";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -39,6 +40,7 @@ const AppRoutes = () => (
       <Route path="/quiz" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
       <Route path="/practice" element={<ProtectedRoute><ConversationPractice /></ProtectedRoute>} />
       <Route path="/errors" element={<ProtectedRoute><ErrorBank /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   </BrowserRouter>
