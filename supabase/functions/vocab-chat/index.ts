@@ -180,7 +180,6 @@ Respond with ONLY the JSON, nothing else.`;
 
     } else if (type === "define_word") {
       // Generate a Merriam-Webster style definition for a user-submitted word
-      const targetWord = (await req.json().catch(() => ({})))?.word || word;
       systemPrompt = `You are a lexicographer writing entries in the style of the Merriam-Webster dictionary.
 Given a word, provide:
 1. A clear, concise definition (one sentence, lowercase, no period)
