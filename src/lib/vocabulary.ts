@@ -1672,6 +1672,7 @@ export function getRandomWords(type: WordBank, count: number = 10): VocabWord[] 
 const rolePrompts: Record<WordBank, { role: RoleType; label: string }> = {
   academic: { role: "examiner", label: "IELTS Examiner" },
   beginner: { role: "teacher", label: "Kind Teacher" },
+  elementary: { role: "teacher", label: "Friendly Guide" },
   everyday: { role: "local", label: "Native Friend" },
   intermediate: { role: "tutor", label: "School Tutor" },
   native: { role: "examiner", label: "Professional Peer" },
