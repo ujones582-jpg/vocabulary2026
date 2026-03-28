@@ -70,6 +70,13 @@ export default function LearnDashboard() {
               <p className="text-[10px] text-muted-foreground">Mastered</p>
             </div>
           </div>
+          <button
+            onClick={() => setDetailsOpen(true)}
+            className="w-full mt-2 py-2 text-xs font-medium text-primary flex items-center justify-center gap-1.5 hover:bg-accent rounded-md transition-colors"
+          >
+            <List className="w-3.5 h-3.5" />
+            See Details
+          </button>
         </div>
       )}
 
