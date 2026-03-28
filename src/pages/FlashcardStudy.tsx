@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, RotateCcw, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, RotateCcw, CheckCircle2, Zap } from "lucide-react";
 import type { WordBank } from "@/lib/vocabulary";
 import { getRandomWords } from "@/lib/vocabulary";
 import { useWordStatus } from "@/hooks/useWordStatus";
@@ -11,7 +11,7 @@ export default function FlashcardStudy() {
   const bank = (searchParams.get("bank") || "academic") as WordBank;
   const navigate = useNavigate();
 
-  const { markSeen, getStatus, counts, loading } = useWordStatus(bank);
+  const { markSeen, manualPromote, getStatus, counts, loading } = useWordStatus(bank);
 
   const [words, setWords] = useState(() => getRandomWords(bank, 10));
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -40,6 +40,13 @@ export default function FlashcardStudy() {
     setStudied((prev) => new Set(prev).add(currentIndex));
     navigate(`/quiz?bank=${bank}`);
   };
+
+  const handleKnowIt = useCallback(async () => {
+    await manualPromote(word.word, "mastered");
+    setStudied((prev) => new Set(prev).add(currentIndex));
+    setFlipped(false);
+    if (currentIndex < words.length - 1) setCurrentIndex((i) => i + 1);
+  }, [manualPromote, word, currentIndex, words.length]);
 
   const handleRestart = () => {
     setWords(getRandomWords(bank, 10));
@@ -76,6 +83,14 @@ export default function FlashcardStudy() {
               <span className="text-xs uppercase tracking-widest text-muted-foreground font-medium mb-4">{word.partOfSpeech}</span>
               <h2 className="font-display text-4xl text-foreground mb-3">{word.word}</h2>
               <p className="text-sm text-muted-foreground">Tap to see definition</p>
+              {getStatus(word.word) !== "mastered" && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleKnowIt(); }}
+                  className="mt-4 px-4 py-2 rounded-lg bg-accent text-accent-foreground text-xs font-semibold flex items-center gap-1.5 hover:bg-primary hover:text-primary-foreground transition-colors active:scale-95"
+                >
+                  <Zap className="w-3.5 h-3.5" /> Know it
+                </button>
+              )}
             </div>
             <div className="absolute inset-0 backface-hidden rotate-y-180 bg-primary rounded-xl flex flex-col items-center justify-center p-8 text-center">
               <span className="text-xs uppercase tracking-widest text-primary-foreground/50 font-medium mb-4">Definition</span>

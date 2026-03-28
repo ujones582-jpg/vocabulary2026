@@ -1,20 +1,24 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { WordBank } from "@/lib/vocabulary";
-import { LogOut } from "lucide-react";
+import { LogOut, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserPreference } from "@/hooks/useUserPreference";
+import PlacementAssessment from "@/components/PlacementAssessment";
 
 const banks = [
   { id: "beginner" as WordBank, label: "Beginner EFL", desc: "Start from zero — no English needed", tag: "A1" },
+  { id: "elementary" as WordBank, label: "Elementary", desc: "Simple sentences · Daily life · Shopping · Travel", tag: "A2" },
   { id: "intermediate" as WordBank, label: "Upper Primary & Middle School", desc: "Grades 4–8 · Reading · Science · Social Studies", tag: "B1" },
   { id: "everyday" as WordBank, label: "Everyday Conversational", desc: "Travel · Idioms · Phone calls", tag: "B2" },
   { id: "academic" as WordBank, label: "Advanced Academic", desc: "TOEFL · IELTS · SAT", tag: "C1" },
+  { id: "native" as WordBank, label: "Native & University / Work", desc: "Professional · Graduate-level · Nuanced expression", tag: "C2" },
 ];
 
 export default function WordBankSelection() {
   const [selected, setSelected] = useState<WordBank | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showAssessment, setShowAssessment] = useState(false);
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { saveBank } = useUserPreference();
@@ -27,6 +31,22 @@ export default function WordBankSelection() {
     navigate(`/learn?bank=${selected}`);
   };
 
+  const handleAssessmentSelect = async (bank: WordBank) => {
+    setSaving(true);
+    await saveBank(bank);
+    setSaving(false);
+    navigate(`/learn?bank=${bank}`);
+  };
+
+  if (showAssessment) {
+    return (
+      <PlacementAssessment
+        onSelect={handleAssessmentSelect}
+        onBack={() => setShowAssessment(false)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col px-5 py-8 max-w-md mx-auto">
       <div>
@@ -38,6 +58,15 @@ export default function WordBankSelection() {
           Choose a level that matches where you are right now.
         </p>
       </div>
+
+      {/* Help me choose button */}
+      <button
+        onClick={() => setShowAssessment(true)}
+        className="mt-4 w-full py-2.5 rounded-lg text-sm font-medium border border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+      >
+        <Sparkles className="w-3.5 h-3.5" />
+        Not sure? Help me choose
+      </button>
 
       <div className="flex-1 flex flex-col gap-2.5 mt-8">
         {banks.map((bank) => {

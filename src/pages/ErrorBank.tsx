@@ -10,7 +10,7 @@ interface ErrorEntry {
   bank: string;
   user_sentence: string;
   correction: string;
-  created_time: string;
+  created_at: string;
 }
 export default function ErrorBank() {
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ export default function ErrorBank() {
       const { data, error } = await supabase
         .from("user_errors")
         .select("*")
-        .order("created_time", { ascending: false });
+        .order("created_at", { ascending: false });
 
       if (error) console.error("Failed to fetch errors:", error);
       else setEntries(data || []);

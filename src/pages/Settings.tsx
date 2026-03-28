@@ -1,16 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, LogOut } from "lucide-react";
+import { ArrowLeft, LogOut, Sparkles } from "lucide-react";
 import type { WordBank } from "@/lib/vocabulary";
 import { useUserPreference } from "@/hooks/useUserPreference";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import PlacementAssessment from "@/components/PlacementAssessment";
 
 const banks: { id: WordBank; label: string; tag: string }[] = [
   { id: "beginner", label: "Beginner EFL", tag: "A1" },
+  { id: "elementary", label: "Elementary", tag: "A2" },
   { id: "intermediate", label: "Upper Primary & Middle School", tag: "B1" },
   { id: "everyday", label: "Everyday Conversational", tag: "B2" },
   { id: "academic", label: "Advanced Academic", tag: "C1" },
+  { id: "native", label: "Native & University / Work", tag: "C2" },
 ];
 
 export default function Settings() {
@@ -19,6 +22,7 @@ export default function Settings() {
   const { signOut } = useAuth();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [showAssessment, setShowAssessment] = useState(false);
 
   const handleBankSelect = async (b: WordBank) => {
     if (b === currentBank || saving) return;
@@ -32,6 +36,28 @@ export default function Settings() {
       navigate(`/learn?bank=${b}`);
     }
   };
+
+  const handleAssessmentSelect = async (bank: WordBank) => {
+    setSaving(true);
+    const error = await saveBank(bank);
+    setSaving(false);
+    if (error) {
+      toast({ title: "Error", description: "Failed to update preference.", variant: "destructive" });
+    } else {
+      toast({ title: "Switched", description: `Now using ${banks.find(x => x.id === bank)?.label}.` });
+      setShowAssessment(false);
+      navigate(`/learn?bank=${bank}`);
+    }
+  };
+
+  if (showAssessment) {
+    return (
+      <PlacementAssessment
+        onSelect={handleAssessmentSelect}
+        onBack={() => setShowAssessment(false)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto">
@@ -48,6 +74,14 @@ export default function Settings() {
           <p className="text-xs text-muted-foreground mb-4">
             Your progress is saved separately for each level. Switching won't erase anything.
           </p>
+
+          <button
+            onClick={() => setShowAssessment(true)}
+            className="w-full mb-3 py-2.5 rounded-lg text-sm font-medium border border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Retake placement assessment
+          </button>
 
           <div className="space-y-2">
             {banks.map(b => (

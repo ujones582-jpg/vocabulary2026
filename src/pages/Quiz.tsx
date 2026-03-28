@@ -20,6 +20,7 @@ interface SpellingQuestion {
   definition: string;
   partOfSpeech: string;
   answer: string;
+  example?: string;
 }
 
 type QuizQuestion = MCQQuestion | SpellingQuestion;
@@ -35,7 +36,7 @@ function buildQuestions(quizWords: VocabWord[], allWords: VocabWord[]): QuizQues
       ].sort(() => Math.random() - 0.5);
       return { type: "mcq" as const, word: w.word, correctDefinition: w.definition, options };
     } else {
-      return { type: "spelling" as const, definition: w.definition, partOfSpeech: w.partOfSpeech, answer: w.word };
+      return { type: "spelling" as const, definition: w.definition, partOfSpeech: w.partOfSpeech, answer: w.word, example: w.example };
     }
   });
 }
@@ -101,6 +102,7 @@ export default function Quiz() {
   const [results, setResults] = useState<(boolean | null)[]>([]);
   const [showResult, setShowResult] = useState(false);
   const [finished, setFinished] = useState(false);
+  const [showHint, setShowHint] = useState(false);
 
   if (questions.length > 0 && results.length === 0) {
     setResults(new Array(questions.length).fill(null));
@@ -139,24 +141,56 @@ export default function Quiz() {
     [showResult, question, currentQ, recordQuizAnswer, saveError]
   );
 
+  // Levenshtein distance for "close enough" spelling
+  const levenshtein = useCallback((a: string, b: string): number => {
+    const m = a.length, n = b.length;
+    const dp = Array.from({ length: m + 1 }, (_, i) => {
+      const row = new Array(n + 1).fill(0);
+      row[0] = i;
+      return row;
+    });
+    for (let j = 1; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++)
+      for (let j = 1; j <= n; j++)
+        dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + (a[i - 1] !== b[j - 1] ? 1 : 0));
+    return dp[m][n];
+  }, []);
+
   const handleSpellingSubmit = useCallback(async () => {
     if (showResult || !question || question.type !== "spelling") return;
-    const isCorrect = spellingInput.trim().toLowerCase() === question.answer.toLowerCase();
+    const trimmed = spellingInput.trim().toLowerCase();
+    const answer = question.answer.toLowerCase();
+    const exactCorrect = trimmed === answer;
+    const dist = levenshtein(trimmed, answer);
+    const closeEnough = !exactCorrect && dist === 1;
+    const isCorrect = exactCorrect || closeEnough;
     setResults((prev) => { const n = [...prev]; n[currentQ] = isCorrect; return n; });
     setShowResult(true);
     await recordQuizAnswer(question.answer, "spelling", isCorrect);
     if (!isCorrect) {
       await saveError(question.answer, `Typed: "${spellingInput.trim()}"`, `Correct spelling: "${question.answer}"`);
     }
-  }, [showResult, question, currentQ, spellingInput, recordQuizAnswer, saveError]);
+  }, [showResult, question, currentQ, spellingInput, recordQuizAnswer, saveError, levenshtein]);
 
   const handleNext = useCallback(() => {
     setMcqSelected(null);
     setSpellingInput("");
     setShowResult(false);
+    setShowHint(false);
     if (currentQ < questions.length - 1) setCurrentQ((i) => i + 1);
     else setFinished(true);
   }, [currentQ, questions.length]);
+
+  const handleOverride = useCallback(async (overrideTo: boolean) => {
+    if (!question || question.type !== "spelling") return;
+    const word = question.answer;
+    setResults((prev) => { const n = [...prev]; n[currentQ] = overrideTo; return n; });
+    // Re-record with corrected result
+    await recordQuizAnswer(word, "spelling", overrideTo);
+    if (!overrideTo) {
+      await saveError(word, `Typed: "${spellingInput.trim()}"`, `Correct spelling: "${word}"`);
+    }
+  }, [question, currentQ, spellingInput, recordQuizAnswer, saveError]);
 
   const handleRetry = () => {
     if (source === "errors") {
@@ -332,6 +366,33 @@ export default function Quiz() {
               </div>
               <p className="text-base font-medium text-foreground leading-relaxed mb-2">{question.definition}</p>
               <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">{question.partOfSpeech}</span>
+
+              {!showHint ? (
+                <button
+                  onClick={() => setShowHint(true)}
+                  className="mt-4 text-xs text-primary font-medium hover:underline transition-colors"
+                >
+                  Show hint
+                </button>
+              ) : (
+                <>
+                  {/* Letter hint */}
+                  <div className="mt-4 flex items-center gap-1.5">
+                    <span className="text-sm font-bold text-primary">{question.answer[0].toUpperCase()}</span>
+                    {Array.from({ length: question.answer.length - 1 }).map((_, i) => (
+                      <span key={i} className="w-3.5 h-0.5 bg-muted-foreground/30 rounded-full" />
+                    ))}
+                    <span className="text-xs text-muted-foreground ml-2">({question.answer.length} letters)</span>
+                  </div>
+
+                  {/* Example sentence hint */}
+                  {question.example && (
+                    <p className="mt-3 text-sm text-muted-foreground italic leading-relaxed">
+                      &ldquo;{question.example.replace(new RegExp(question.answer, "gi"), "______")}&rdquo;
+                    </p>
+                  )}
+                </>
+              )}
             </div>
 
             <div className="flex-1 flex flex-col justify-center">
@@ -350,13 +411,35 @@ export default function Quiz() {
                 autoFocus
               />
               {showResult && !results[currentQ] && (
-                <p className="text-center mt-3 text-sm">
-                  <span className="text-muted-foreground">Correct: </span>
-                  <span className="font-bold text-success">{question.answer}</span>
-                </p>
+                <>
+                  <p className="text-center mt-3 text-sm">
+                    <span className="text-muted-foreground">Correct: </span>
+                    <span className="font-bold text-success">{question.answer}</span>
+                  </p>
+                  <button
+                    onClick={() => handleOverride(true)}
+                    className="mt-2 mx-auto block text-xs font-medium text-primary hover:underline transition-colors"
+                  >
+                    Override: I was correct
+                  </button>
+                </>
               )}
               {showResult && results[currentQ] && (
-                <p className="text-center mt-3 text-sm text-success font-medium">Correct</p>
+                <>
+                  <p className="text-center mt-3 text-sm text-success font-medium">
+                    {spellingInput.trim().toLowerCase() !== question.answer.toLowerCase() ? (
+                      <>Close enough! <span className="text-muted-foreground font-normal">({question.answer})</span></>
+                    ) : "Correct"}
+                  </p>
+                  {spellingInput.trim().toLowerCase() !== question.answer.toLowerCase() && (
+                    <button
+                      onClick={() => handleOverride(false)}
+                      className="mt-2 mx-auto block text-xs font-medium text-destructive hover:underline transition-colors"
+                    >
+                      Override: I was incorrect
+                    </button>
+                  )}
+                </>
               )}
             </div>
 

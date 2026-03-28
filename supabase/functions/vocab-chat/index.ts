@@ -15,7 +15,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const { type, bank, role, word, userInput, conversationHistory, categories, conversationLog, roundCount, history } = await req.json();
+    const { type, bank, role, word, userInput, conversationHistory, categories, conversationLog, roundCount, history, topicType, topicPrompt, topicLabel } = await req.json();
 
     let systemPrompt = "";
     let messages: { role: string; content: string }[] = [];
@@ -27,6 +27,12 @@ serve(async (req) => {
 You are like a kindergarten teacher. Use extremely simple words (1-3 word phrases), lots of emoji 😊, and be super encouraging.
 Start with a very simple greeting and ask a very basic question (like "What is your name?" or "Do you like 🍎?").
 Keep everything at the most basic level possible. Use emoji to help them understand meaning.`,
+
+        elementary: `You are a friendly, encouraging English guide talking to an A2-level learner who knows basic vocabulary.
+Use simple but complete sentences. Keep grammar straightforward (present simple, past simple, can/want to).
+Talk about everyday topics: daily routines, shopping, travel, hobbies, weather.
+Be warm and patient. If they make mistakes, model correct usage naturally. Don't use complex vocabulary.
+Start with a friendly greeting and a simple question about their day or interests.`,
 
         everyday: `You are a friendly native English speaker having a casual chat. You're meeting someone new at a coffee shop or social event.
 Be natural, relaxed, and conversational. Talk like a real person — use contractions, casual language, slang if appropriate.
@@ -42,9 +48,23 @@ Use clear, standard English — not too casual, not too formal. Like a good teac
 Use sophisticated but natural language. Discuss interesting topics — current events, science, philosophy, literature, society.
 Start with a thoughtful opening that invites discussion on a substantive topic.
 Be articulate but not pretentious. Engage genuinely with ideas.`,
+
+        native: `You are a highly articulate professional peer — think senior colleague, fellow graduate student, or intellectual equal.
+Use precise, nuanced language naturally. Expect the student to match your register.
+Discuss complex topics: policy analysis, epistemology, organizational strategy, advanced research.
+Start with a sophisticated opening that assumes high proficiency. Challenge them intellectually.
+Use idioms, collocations, and register-shifting naturally. Never simplify.`,
       };
 
       systemPrompt = bankPersona[bank] || bankPersona.academic;
+
+      // Add topic/scenario context
+      if (topicPrompt && topicType === "scenario") {
+        systemPrompt += `\n\nIMPORTANT SCENARIO: ${topicPrompt}\nStay in this role-play scenario throughout the conversation. Start by setting the scene naturally.`;
+      } else if (topicPrompt && topicType === "topic") {
+        systemPrompt += `\n\nFocus the conversation on this topic: ${topicPrompt}\nStart by bringing up this topic naturally in your opening.`;
+      }
+
       messages = [
         { role: "system", content: systemPrompt + "\n\nGenerate ONLY your opening message. Keep it natural and concise (2-4 sentences max)." },
         { role: "user", content: "Start the conversation." },
@@ -63,6 +83,17 @@ Rules:
 - Ask simple follow-up questions to keep the chat going
 - If they write in another language, gently respond in simple English
 - Never be a teacher — be a friendly helper who makes them feel safe to try`,
+
+        elementary: `You are a friendly, patient English guide for an A2-level learner.
+Rules:
+- Use simple, clear sentences (8-12 words usually)
+- Stick to common, everyday vocabulary
+- Use present simple, past simple, and basic future tenses
+- If they make mistakes, model correct usage naturally — don't explicitly correct
+- Ask follow-up questions about their daily life, hobbies, and experiences
+- Be warm and encouraging
+- Keep responses 2-3 sentences usually
+- Talk about concrete, everyday topics — not abstract ideas`,
 
         everyday: `You are a native English speaker having a real casual conversation. 
 Rules:
@@ -94,9 +125,26 @@ Rules:
 - Use academic register naturally (not forced)
 - Reference relevant concepts, theories, or examples when appropriate
 - Keep responses substantive but not overly long (3-5 sentences usually)`,
+
+        native: `You are a professional peer in an intellectually demanding setting.
+Rules:
+- Speak as you would to a fellow native speaker at a graduate seminar or boardroom
+- Use precise, nuanced vocabulary — collocations, hedging, register-shifting
+- Challenge their arguments rigorously but respectfully
+- Don't simplify — expect them to match your level
+- Use idioms and expressions naturally when appropriate
+- Push for precision in their language — if they use a vague word, probe deeper
+- Keep responses substantive (3-5 sentences usually)`,
       };
 
       systemPrompt = bankBehavior[bank] || bankBehavior.academic;
+
+      // Add topic/scenario context
+      if (topicPrompt && topicType === "scenario") {
+        systemPrompt += `\n\nYou are in this ROLE-PLAY SCENARIO: ${topicPrompt}\nStay in character throughout. Don't break the scenario.`;
+      } else if (topicPrompt && topicType === "topic") {
+        systemPrompt += `\n\nKeep the conversation focused on: ${topicPrompt}\nYou can naturally branch within this topic but don't drift to unrelated subjects.`;
+      }
       
       // Build messages from conversation history
       messages = [
@@ -158,24 +206,43 @@ Imagine you're a native friend rating how enjoyable this conversation was.`,
 - fluency: Does the writing flow? Is diction effective?
 - coherence: Are ideas logically connected and well-structured?
 Score strictly as an IELTS examiner would.`,
+
+        native: `This student is at near-native proficiency. Score based on:
+- precision: Do they choose the exact right word for the context?
+- sophistication: Is their language nuanced, layered, and idiomatic?
+- rhetoric: Can they persuade, argue, and structure ideas compellingly?
+- register: Do they adapt tone and formality appropriately to context?
+Score as a university professor or senior editor would — expect near-native precision.`,
       };
 
-      systemPrompt = `You are an English language assessor. Score this student's conversation performance.
+      systemPrompt = `You are an English language assessor. Score this student's conversation performance AND provide detailed feedback.
 
 ${bankInstructions[bank] || bankInstructions.academic}
 
-Score each category from 1-10. Respond in this exact JSON format:
+You must respond in this exact JSON format:
 {
   "scores": {
     ${(categories || []).map((c: string) => `"${c}": <number 1-10>`).join(",\n    ")}
+  },
+  "feedback": {
+    "strengths": ["<specific thing the student did well>", "<another strength>"],
+    "improvements": ["<specific area to improve with actionable advice>", "<another improvement>"],
+    "summary": "<2-3 sentence overall assessment of performance>"
+  },
+  "wordUsage": {
+    "impressiveWords": ["<advanced or notable words the student used effectively>"],
+    "wordsToTry": ["<3-5 useful words the student could have used in this conversation but didn't>"]
   }
 }
+
+For "impressiveWords", list words the STUDENT (not the AI) used that show good vocabulary — even simple words count for beginners.
+For "wordsToTry", suggest words that would have fit naturally in this conversation's context.
 
 Respond with ONLY the JSON, nothing else.`;
 
       messages = [
         { role: "system", content: systemPrompt },
-        { role: "user", content: `Here is the conversation log (${roundCount} rounds):\n\n${conversationLog}\n\nScore the student's performance across: ${categoryList}` },
+        { role: "user", content: `Here is the conversation log (${roundCount} rounds):\n\n${conversationLog}\n\nScore the student's performance across: ${categoryList}. Also provide detailed feedback and word usage analysis.` },
       ];
 
     } else if (type === "define_word") {
@@ -242,9 +309,13 @@ Respond in this exact JSON format and nothing else:
       try {
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : {};
-        result = { scores: parsed.scores || parsed };
+        result = {
+          scores: parsed.scores || {},
+          feedback: parsed.feedback || null,
+          wordUsage: parsed.wordUsage || null,
+        };
       } catch {
-        result = { scores: {} };
+        result = { scores: {}, feedback: null, wordUsage: null };
       }
     } else if (type === "define_word") {
       try {
