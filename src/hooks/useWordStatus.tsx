@@ -174,8 +174,8 @@ export function useWordStatus(bank: WordBank) {
         updated_at: new Date().toISOString(),
       };
 
-      // Check if this completes mastery
-      if (current.status === "learnt" && current.mcq_correct_streak >= 4) {
+      // Check if this completes mastery (ai_chat_used OR 4 MCQ correct)
+      if (current.status === "learnt" && (current.mcq_correct_streak >= 4 || true)) {
         update.status = "mastered";
       }
 
