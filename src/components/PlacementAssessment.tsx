@@ -193,30 +193,26 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
 
   const nextVocabQuestion = () => {
     setVocabRevealed(false);
-    if (vocabIdx < vocabQuizWords.length - 1) {
+    if (vocabIdx < quizQuestions.length - 1) {
       setVocabIdx(vocabIdx + 1);
     } else {
-      // Calculate result
       const testEntries = selectedTests
         .filter(id => testScores[id] !== undefined)
         .map(id => ({ testId: id, score: testScores[id] }));
-      const currentWord = vocabQuizWords;
       const correct = vocabAnswers.map((ans, i) => {
         if (ans === null) return false;
-        const w = currentWord[i];
+        const w = quizQuestions[i];
         const choices = shuffledChoices(w);
         return choices[ans!] === w.definition;
       });
-      const rec = computeRecommendation(testEntries, correct);
+      const rec = computeRecommendation(testEntries, correct, quizQuestions);
       setRecommendation(rec);
       setStep("result");
     }
   };
 
-  // Deterministic shuffle based on word
-  const shuffledChoices = (w: typeof vocabQuizWords[0]) => {
+  const shuffledChoices = (w: VocabQuestion) => {
     const all = [w.definition, ...w.fakeDefinitions];
-    // Simple stable shuffle using word char codes as seed
     const seed = w.word.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
     return all
       .map((v, i) => ({ v, sort: (seed * (i + 1) * 7) % 97 }))
@@ -224,7 +220,7 @@ export default function PlacementAssessment({ onSelect, onBack }: Props) {
       .map(x => x.v);
   };
 
-  const currentVocab = vocabQuizWords[vocabIdx];
+  const currentVocab = quizQuestions[vocabIdx];
   const currentChoices = currentVocab ? shuffledChoices(currentVocab) : [];
   const isCurrentCorrect = vocabRevealed && vocabAnswers[vocabIdx] !== null
     ? currentChoices[vocabAnswers[vocabIdx]!] === currentVocab?.definition
