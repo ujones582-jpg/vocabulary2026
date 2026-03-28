@@ -156,6 +156,7 @@ export default function Quiz() {
     setMcqSelected(null);
     setSpellingInput("");
     setShowResult(false);
+    setShowHint(false);
     if (currentQ < questions.length - 1) setCurrentQ((i) => i + 1);
     else setFinished(true);
   }, [currentQ, questions.length]);
