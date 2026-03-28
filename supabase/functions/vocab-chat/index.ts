@@ -105,6 +105,13 @@ Rules:
       };
 
       systemPrompt = bankBehavior[bank] || bankBehavior.academic;
+
+      // Add topic/scenario context
+      if (topicPrompt && topicType === "scenario") {
+        systemPrompt += `\n\nYou are in this ROLE-PLAY SCENARIO: ${topicPrompt}\nStay in character throughout. Don't break the scenario.`;
+      } else if (topicPrompt && topicType === "topic") {
+        systemPrompt += `\n\nKeep the conversation focused on: ${topicPrompt}\nYou can naturally branch within this topic but don't drift to unrelated subjects.`;
+      }
       
       // Build messages from conversation history
       messages = [
