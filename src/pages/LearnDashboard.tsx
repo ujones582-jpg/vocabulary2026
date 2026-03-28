@@ -136,6 +136,7 @@ export default function LearnDashboard() {
       </div>
 
       <WordStatusPortal counts={counts} words={portalWords} />
+      <WordDetailsModal open={detailsOpen} onClose={() => setDetailsOpen(false)} words={allWords} getStatus={getStatus} counts={counts} />
     </div>
   );
 }
