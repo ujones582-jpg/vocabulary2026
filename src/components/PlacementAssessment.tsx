@@ -45,19 +45,24 @@ interface Props {
 
 /* ── Scoring algorithm ─────────────────────────────────────── */
 
+function scoreToBankFromTest(testId: string, score: number): WordBank {
+  const test = standardizedTests.find(t => t.id === testId);
+  if (!test) return "beginner";
+  for (const t of test.thresholds) {
+    if (score < t.cutoff) return t.bank;
+  }
+  return "academic";
+}
+
 function computeRecommendation(
-  testAnswers: { testId: string; rangeIdx: number }[],
+  testEntries: { testId: string; score: number }[],
   vocabCorrect: boolean[],
 ): WordBank {
   const scores: Record<WordBank, number> = { beginner: 0, intermediate: 0, everyday: 0, academic: 0 };
 
-  // Weight from test scores
-  testAnswers.forEach(({ testId, rangeIdx }) => {
-    const test = standardizedTests.find(t => t.id === testId);
-    if (test) {
-      const bank = test.scoreRanges[rangeIdx].bank;
-      scores[bank] += 3; // strong signal
-    }
+  testEntries.forEach(({ testId, score }) => {
+    const bank = scoreToBankFromTest(testId, score);
+    scores[bank] += 3;
   });
 
   // Weight from vocab quiz
