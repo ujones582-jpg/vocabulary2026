@@ -6,6 +6,7 @@ import { getWordBank, getRoleForBank } from "@/lib/vocabulary";
 import { useAuth } from "@/hooks/useAuth";
 import { useWordStatus } from "@/hooks/useWordStatus";
 import WordStatusPortal from "@/components/WordStatusPortal";
+import WordDetailsModal from "@/components/WordDetailsModal";
 
 export default function LearnDashboard() {
   const [searchParams] = useSearchParams();
