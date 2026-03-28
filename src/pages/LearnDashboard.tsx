@@ -27,6 +27,7 @@ export default function LearnDashboard() {
   };
 
   const seenPlus = counts.seen + counts.learnt + counts.mastered;
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const portalWords = allWords.map((w) => ({ word: w.word, status: getStatus(w.word) }));
 
