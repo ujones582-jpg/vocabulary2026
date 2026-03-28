@@ -10,7 +10,7 @@ interface ErrorEntry {
   bank: string;
   user_sentence: string;
   correction: string;
-  created_time: string;
+  created_at: string;
 }
 export default function ErrorBank() {
   const navigate = useNavigate();
