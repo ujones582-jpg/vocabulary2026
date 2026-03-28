@@ -26,7 +26,7 @@ export default function LearnDashboard() {
     intermediate: "📚 Upper Primary & Middle School",
   };
 
-  const seenPlus = counts.seen + counts.learnt + counts.mastered;
+  const seenPlus = counts.seen + counts.developing + counts.learnt + counts.mastered;
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   const portalWords = allWords.map((w) => ({ word: w.word, status: getStatus(w.word) }));
