@@ -52,7 +52,7 @@ export default function LearnDashboard() {
       {/* Progress summary */}
       {!loading && (
         <div className="px-4 pt-4">
-          <div className="grid grid-cols-4 gap-2 bg-card rounded-lg p-3 card-shadow">
+          <div className="grid grid-cols-5 gap-2 bg-card rounded-lg p-3 card-shadow">
             <div className="text-center">
               <p className="text-lg font-bold text-muted-foreground">{counts.unseen}</p>
               <p className="text-[10px] text-muted-foreground">Unseen</p>
@@ -60,6 +60,10 @@ export default function LearnDashboard() {
             <div className="text-center">
               <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{counts.seen}</p>
               <p className="text-[10px] text-muted-foreground">Seen</p>
+            </div>
+            <div className="text-center">
+              <p className="text-lg font-bold text-orange-600 dark:text-orange-400">{counts.developing}</p>
+              <p className="text-[10px] text-muted-foreground">Dev.</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{counts.learnt}</p>
