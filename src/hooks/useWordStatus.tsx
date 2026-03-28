@@ -128,8 +128,8 @@ export function useWordStatus(bank: WordBank) {
         if (mcq >= 2 && spelling >= 2 && current.status === "seen") {
           newStatus = "learnt";
         }
-        // Check for mastered: 4 MCQ correct + ai chat used
-        if (mcq >= 4 && current.ai_chat_used && (current.status === "learnt" || newStatus === "learnt")) {
+        // Check for mastered: 4 MCQ correct OR ai chat used
+        if ((mcq >= 4 || current.ai_chat_used) && (current.status === "learnt" || newStatus === "learnt")) {
           newStatus = "mastered";
         }
       }
