@@ -156,9 +156,9 @@ export default function ConversationPractice() {
   // Scoring overlay
   if (showScoring) {
     return (
-      <div className="min-h-screen flex flex-col max-w-md mx-auto items-center justify-center px-6 py-8">
+      <div className="min-h-screen flex flex-col max-w-md mx-auto px-6 py-8 overflow-y-auto">
         {scoringLoading ? (
-          <div className="flex flex-col items-center gap-4 opacity-0 animate-fade-up">
+          <div className="flex-1 flex flex-col items-center justify-center gap-4 opacity-0 animate-fade-up">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
             <p className="text-sm text-muted-foreground">AI is scoring your conversation…</p>
           </div>
@@ -167,7 +167,8 @@ export default function ConversationPractice() {
             <h2 className="text-xl font-bold text-foreground text-center mb-2">Conversation Score</h2>
             <p className="text-sm text-muted-foreground text-center mb-6">{roundCount} rounds completed</p>
 
-            <div className="space-y-4 mb-8">
+            {/* Score bars */}
+            <div className="space-y-4 mb-6">
               {categories.map((cat, i) => {
                 const score = scores?.[cat.key] ?? 0;
                 return (
@@ -187,6 +188,82 @@ export default function ConversationPractice() {
                 );
               })}
             </div>
+
+            {/* AI Feedback Summary */}
+            {feedback && (
+              <div className="mb-6 opacity-0 animate-fade-up" style={{ animationDelay: "400ms" }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <Star className="w-4 h-4 text-primary" />
+                  <h3 className="text-sm font-bold text-foreground">AI Feedback</h3>
+                </div>
+
+                {feedback.summary && (
+                  <p className="text-sm text-foreground leading-relaxed mb-3 bg-card rounded-lg p-3 border border-border">
+                    {feedback.summary}
+                  </p>
+                )}
+
+                {feedback.strengths?.length > 0 && (
+                  <div className="mb-2">
+                    <p className="text-xs font-semibold text-success uppercase tracking-wider mb-1.5">Strengths</p>
+                    <ul className="space-y-1">
+                      {feedback.strengths.map((s, i) => (
+                        <li key={i} className="text-sm text-foreground flex items-start gap-2">
+                          <span className="text-success mt-0.5">✓</span>
+                          <span>{s}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {feedback.improvements?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-amber-500 uppercase tracking-wider mb-1.5">Areas to Improve</p>
+                    <ul className="space-y-1">
+                      {feedback.improvements.map((s, i) => (
+                        <li key={i} className="text-sm text-foreground flex items-start gap-2">
+                          <TrendingUp className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                          <span>{s}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Word Usage Report */}
+            {wordUsage && (
+              <div className="mb-8 opacity-0 animate-fade-up" style={{ animationDelay: "550ms" }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <BookOpen className="w-4 h-4 text-primary" />
+                  <h3 className="text-sm font-bold text-foreground">Word Usage</h3>
+                </div>
+
+                {wordUsage.impressiveWords?.length > 0 && (
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Words you used well</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {wordUsage.impressiveWords.map((w) => (
+                        <span key={w} className="text-sm bg-success/10 text-success px-2.5 py-1 rounded-md font-medium">{w}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {wordUsage.wordsToTry?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Try using these next time</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {wordUsage.wordsToTry.map((w) => (
+                        <span key={w} className="text-sm bg-accent text-accent-foreground px-2.5 py-1 rounded-md font-medium border border-border">{w}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             <button
               onClick={() => navigate(`/learn?bank=${bank}`)}
