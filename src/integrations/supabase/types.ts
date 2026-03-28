@@ -196,6 +196,7 @@ export type Database = {
           ai_chat_used: boolean
           bank: string
           id: string
+          last_quizzed_at: string | null
           mcq_correct_streak: number
           spelling_correct_streak: number
           status: string
@@ -207,6 +208,7 @@ export type Database = {
           ai_chat_used?: boolean
           bank: string
           id?: string
+          last_quizzed_at?: string | null
           mcq_correct_streak?: number
           spelling_correct_streak?: number
           status?: string
@@ -218,6 +220,7 @@ export type Database = {
           ai_chat_used?: boolean
           bank?: string
           id?: string
+          last_quizzed_at?: string | null
           mcq_correct_streak?: number
           spelling_correct_streak?: number
           status?: string
