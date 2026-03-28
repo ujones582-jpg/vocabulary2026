@@ -41,6 +41,13 @@ export default function FlashcardStudy() {
     navigate(`/quiz?bank=${bank}`);
   };
 
+  const handleKnowIt = useCallback(async () => {
+    await manualPromote(word.word, "mastered");
+    setStudied((prev) => new Set(prev).add(currentIndex));
+    setFlipped(false);
+    if (currentIndex < words.length - 1) setCurrentIndex((i) => i + 1);
+  }, [manualPromote, word, currentIndex, words.length]);
+
   const handleRestart = () => {
     setWords(getRandomWords(bank, 10));
     setFlipped(false);
