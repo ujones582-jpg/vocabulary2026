@@ -42,6 +42,7 @@ const AppRoutes = () => (
       <Route path="/practice" element={<ProtectedRoute><ConversationPractice /></ProtectedRoute>} />
       <Route path="/errors" element={<ProtectedRoute><ErrorBank /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/chat-history" element={<ProtectedRoute><ChatHistory /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   </BrowserRouter>
