@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, BookOpen, Brain, MessageSquare, Settings, LogOut } from "lucide-react";
+import { ArrowLeft, BookOpen, Brain, MessageSquare, Settings, LogOut, List } from "lucide-react";
 import type { WordBank } from "@/lib/vocabulary";
 import { getWordBank, getRoleForBank } from "@/lib/vocabulary";
 import { useAuth } from "@/hooks/useAuth";
 import { useWordStatus } from "@/hooks/useWordStatus";
 import WordStatusPortal from "@/components/WordStatusPortal";
+import WordDetailsModal from "@/components/WordDetailsModal";
 
 export default function LearnDashboard() {
   const [searchParams] = useSearchParams();
@@ -25,6 +27,7 @@ export default function LearnDashboard() {
   };
 
   const seenPlus = counts.seen + counts.learnt + counts.mastered;
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const portalWords = allWords.map((w) => ({ word: w.word, status: getStatus(w.word) }));
 
@@ -67,6 +70,13 @@ export default function LearnDashboard() {
               <p className="text-[10px] text-muted-foreground">Mastered</p>
             </div>
           </div>
+          <button
+            onClick={() => setDetailsOpen(true)}
+            className="w-full mt-2 py-2 text-xs font-medium text-primary flex items-center justify-center gap-1.5 hover:bg-accent rounded-md transition-colors"
+          >
+            <List className="w-3.5 h-3.5" />
+            See Details
+          </button>
         </div>
       )}
 
@@ -126,6 +136,7 @@ export default function LearnDashboard() {
       </div>
 
       <WordStatusPortal counts={counts} words={portalWords} />
+      <WordDetailsModal open={detailsOpen} onClose={() => setDetailsOpen(false)} words={allWords} getStatus={getStatus} counts={counts} />
     </div>
   );
 }
