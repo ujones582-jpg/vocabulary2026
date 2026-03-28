@@ -111,6 +111,7 @@ function scoreToBankFromTest(testId: string, score: number): WordBank {
 function computeRecommendation(
   testEntries: { testId: string; score: number }[],
   vocabCorrect: boolean[],
+  quizQuestions: VocabQuestion[],
 ): WordBank {
   const scores: Record<WordBank, number> = { beginner: 0, intermediate: 0, everyday: 0, academic: 0, native: 0 };
 
@@ -119,22 +120,17 @@ function computeRecommendation(
     scores[bank] += 3;
   });
 
-  // Weight from vocab quiz
-  vocabQuizWords.forEach((w, i) => {
+  quizQuestions.forEach((w, i) => {
     if (vocabCorrect[i]) {
-      // correct → they know this level, push them at or above
       const levelOrder: WordBank[] = ["beginner", "intermediate", "everyday", "academic", "native"];
       const idx = levelOrder.indexOf(w.level);
       if (idx < 4) scores[levelOrder[idx + 1]] += 1;
       else scores[w.level] += 1;
     } else {
-      // incorrect → this level or below
       scores[w.level] += 1;
     }
   });
 
-  // If no test answers, give vocab quiz more weight (already weighted by count)
-  // Pick highest-scoring bank
   const ranked = (Object.entries(scores) as [WordBank, number][]).sort((a, b) => b[1] - a[1]);
   return ranked[0][0];
 }
