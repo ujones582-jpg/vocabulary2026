@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, BookOpen, Brain, MessageSquare, Settings, LogOut } from "lucide-react";
+import { ArrowLeft, BookOpen, Brain, MessageSquare, Settings, LogOut, List } from "lucide-react";
 import type { WordBank } from "@/lib/vocabulary";
 import { getWordBank, getRoleForBank } from "@/lib/vocabulary";
 import { useAuth } from "@/hooks/useAuth";
